@@ -19,7 +19,7 @@ type SolicitudCuis struct {
 	CodigoPuntoVenta int    `xml:"codigoPuntoVenta" json:"codigoPuntoVenta"`
 	CodigoSistema    string `xml:"codigoSistema" json:"codigoSistema"`
 	CodigoSucursal   int    `xml:"codigoSucursal" json:"codigoSucursal"`
-	NIT              int64  `xml:"nit" json:"nit"`
+	Nit              int64  `xml:"nit" json:"nit"`
 }
 
 // CuisResponse define la estructura del sobre de respuesta SOAP tras solicitar un CUIS.

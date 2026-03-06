@@ -10,12 +10,14 @@ type RecepcionFactura struct {
 	XMLName                           xml.Name                          `xml:"ns:recepcionFactura" json:"-"`
 	SolicitudServicioRecepcionFactura SolicitudServicioRecepcionFactura `xml:"SolicitudServicioRecepcionFactura" json:"solicitudServicioRecepcionFactura"`
 }
+
+// SolicitudRecepcion
 type SolicitudRecepcion struct {
 	CodigoAmbiente        int    `xml:"codigoAmbiente" json:"codigoAmbiente"`
 	CodigoDocumentoSector int    `xml:"codigoDocumentoSector" json:"codigoDocumentoSector"`
 	CodigoEmision         int    `xml:"codigoEmision" json:"codigoEmision"`
 	CodigoModalidad       int    `xml:"codigoModalidad" json:"codigoModalidad"`
-	CodigoPuntoVenta      int    `xml:"codigoPuntoVenta,omitempty" json:"codigoPuntoVenta" `
+	CodigoPuntoVenta      int    `xml:"codigoPuntoVenta" json:"codigoPuntoVenta"`
 	CodigoSistema         string `xml:"codigoSistema" json:"codigoSistema"`
 	CodigoSucursal        int    `xml:"codigoSucursal" json:"codigoSucursal"`
 	Cufd                  string `xml:"cufd" json:"cufd"`
@@ -26,7 +28,12 @@ type SolicitudRecepcion struct {
 
 type SolicitudServicioRecepcionFactura struct {
 	SolicitudRecepcion
-	Archivo     []byte            `xml:"archivo" json:"archivo"`       // se serializa en base64 automáticamente
-	FechaEnvio  datatype.TimeSiat `xml:"fechaEnvio" json:"fechaEnvio"` // enviar como RFC3339 string
+	Archivo     []byte            `xml:"archivo" json:"archivo"`
+	FechaEnvio  datatype.TimeSiat `xml:"fechaEnvio" json:"fechaEnvio"`
 	HashArchivo string            `xml:"hashArchivo" json:"hashArchivo"`
+}
+
+type RecepcionFacturaResponse struct {
+	XMLName                      xml.Name                     `xml:"recepcionFacturaResponse" json:"-"`
+	RespuestaServicioFacturacion RespuestaServicioFacturacion `xml:"RespuestaServicioFacturacion" json:"respuestaServicioFacturacion"`
 }

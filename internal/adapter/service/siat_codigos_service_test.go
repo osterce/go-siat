@@ -47,7 +47,7 @@ func TestNotificaCertificadoRevocado(t *testing.T) {
 		SolicitudNotificaRevocado: codigos.SolicitudNotifcaRevocado{
 			CodigoAmbiente:  codAmbiente,
 			CodigoSistema:   os.Getenv("SIAT_CODIGO_SISTEMA"),
-			NIT:             nit,
+			Nit:             nit,
 			CodigoSucursal:  0,
 			Cuis:            "197C8240",
 			FechaRevocacion: new(time.Now()),
@@ -117,7 +117,7 @@ func TestVerificarNit(t *testing.T) {
 			CodigoAmbiente:      codAmbiente,
 			CodigoModalidad:     codModalidad,
 			CodigoSistema:       os.Getenv("SIAT_CODIGO_SISTEMA"),
-			NIT:                 nit,
+			Nit:                 nit,
 			CodigoSucursal:      0,
 			Cuis:                "197C8240",
 			NitParaVerificacion: 12345678, // Un NIT de prueba para validar la comunicación
@@ -176,7 +176,7 @@ func TestSolicitudCuis(t *testing.T) {
 			CodigoAmbiente:   codAmbiente,
 			CodigoModalidad:  codModalidad,
 			CodigoSistema:    os.Getenv("SIAT_CODIGO_SISTEMA"),
-			NIT:              nit,
+			Nit:              nit,
 			CodigoSucursal:   0,
 			CodigoPuntoVenta: 0,
 		},
@@ -228,13 +228,12 @@ func TestSolicitudCufd(t *testing.T) {
 			CodigoAmbiente:   codAmbiente,
 			CodigoModalidad:  codModalidad,
 			CodigoSistema:    os.Getenv("SIAT_CODIGO_SISTEMA"),
-			NIT:              nit,
+			Nit:              nit,
 			CodigoSucursal:   0,
-			CodigoPuntoVenta: new(int),
+			CodigoPuntoVenta: 0,
 			Cuis:             "197C8240", // Requiere un CUIS vigente para el NIT configurado
 		},
 	}
-	*req.SolicitudCufd.CodigoPuntoVenta = 0
 
 	// Ejecutar la llamada al servicio de códigos del SIAT
 	resp, err := service.SolicitudCufd(context.Background(), config, &req)
@@ -341,7 +340,7 @@ func TestSolicitudCuisMasivo(t *testing.T) {
 			CodigoAmbiente:  codAmbiente,
 			CodigoModalidad: codModalidad,
 			CodigoSistema:   os.Getenv("SIAT_CODIGO_SISTEMA"),
-			NIT:             nit,
+			Nit:             nit,
 			DatosSolicitud: []codigos.SolicitudListaCuisDto{
 				{
 					CodigoSucursal:   0,

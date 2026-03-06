@@ -1,101 +1,106 @@
 # go-siat
 
 [![Status](https://img.shields.io/badge/status-active-success)](https://github.com/ron86i/go-siat)
-[![Go Version](https://img.shields.io/badge/go-1.26+-00ADD8?logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/go-1.21+-00ADD8?logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-**go-siat** es un SDK robusto escrito en Go, diseñado para facilitar la integración con los servicios web SOAP del **SIAT (Sistema de Facturación de Impuestos Nacionales de Bolivia)**. 
-
-Actualmente, el SDK ya cuenta con las implementaciones completas para **Gestión de Códigos**, **Sincronización de Catálogos** y **Operaciones de Punto de Venta**, utilizando el cliente HTTP estándar de Go para garantizar ligereza y facilidad de mantenimiento.
+**go-siat** es un SDK robusto escrito en Go, diseñado para facilitar la integración con los servicios web SOAP del **SIAT (Sistema de Facturación de Impuestos Nacionales de Bolivia)**.
 
 ---
 
 ## 📋 Tabla de Contenidos
 
 - [Capacidades Implementadas](#-capacidades-implementadas)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Configuración](#-configuración)
-- [Testing](#-testing)
-- [Roadmap de Implementación](#-roadmap-de-implementación)
+- [Guía de Inicio Rápido](#-guía-de-inicio-rápido)
+- [Ejemplos por Módulo](#-ejemplos-por-módulo)
 - [Licencia](#-licencia)
 
 ---
 
 ## 🚀 Capacidades Implementadas
 
-Actualmente, el proyecto soporta las operaciones críticas del **Servicio de Códigos** del SIAT:
+El SDK ya cuenta con las siguientes implementaciones completas:
 
-### Gestión de Códigos (`codigos`)
-- ✅ **CUIS**: Obtención individual y masiva del Código Único de Inicio de Sistemas.
-- ✅ **CUFD**: Generación individual y masiva del Código Único de Facturación Diaria (vigencia 24h).
-- ✅ **Validación de NIT**: Verificación automatizada de la validez y estado de contribuyentes.
-- ✅ **Prueba de Comunicación**: Validación de conectividad y credenciales con los servidores oficiales.
-- ✅ **Certificados Revocados**: Notificación de revocación de certificados digitales.
+### ✅ Gestión de Códigos
+- Solicitud de **CUIS** y **CUFD** (Individual y Masivo).
+- Validación de **NIT**.
+- Prueba de Comunicación y Lista de Certificados Revocados.
 
-### Sincronización de Catálogos (`sincronizacion`)
-- ✅ **Actividades Económicas**: Sincronización completa del catálogo de actividades del contribuyente.
-- ✅ **Paramétricas**: Obtención de todos los catálogos paramétricos (Eventos, Motivos, Países, Monedas, etc).
-- ✅ **Productos y Servicios**: Homologación y listado de productos y servicios autorizados.
-- ✅ **Documentos Sector**: Relación entre actividades y tipos de documentos sector.
+### ✅ Sincronización de Catálogos
+- Sincronización de Actividades, Paramétricas, Productos y Servicios, y Documentos Sector.
 
-### Operaciones de Punto de Venta (`operaciones`)
-- ✅ **Registro de Punto de Venta**: Apertura y registro de nuevos puntos de venta/comisionistas.
-- ✅ **Cierre de Operaciones**: Gestión de cierre de sistemas y puntos de venta.
-- ✅ **Eventos Significativos**: Registro y consulta de eventos (cortes de internet, fallas, etc).
+### ✅ Operaciones de Punto de Venta
+- Registro y Cierre de Puntos de Venta.
+- Gestión de **Eventos Significativos**.
 
----
-
-## 📂 Estructura del Proyecto
-
-El proyecto está organizado de la siguiente manera:
-- **`internal/`**: Núcleo del SDK.
-    - **`core/domain/`**: Modelos de datos y estructuras XML para el SIAT.
-    - **`core/port/`**: Definición de interfaces y contratos.
-    - **`adapter/service/`**: Implementación de la comunicación SOAP/HTTP con el SIAT.
-- **`pkg/`**: Paquetes de utilidad, configuración y modelos auxiliares.
-- **`siat.go`**: Punto de entrada principal para inicializar el SDK.
+### ✅ Compra y Venta
+- Recepción de Facturas (XML firmado, comprimido y codificado).
+- Anulación de Facturas.
+- Generación de **CUF** y **Firma Digital XML**.
 
 ---
 
-## ⚙️ Configuración
+## 🛠 Guía de Inicio Rápido
 
-Cree un archivo `.env` en la raíz del proyecto basado en la siguiente tabla:
+La forma más sencilla de utilizar el SDK es a través del paquete unificado `siat`.
 
-| Variable | Descripción | Ejemplo                                            |
-| :--- | :--- |:---------------------------------------------------|
-| `SIAT_TOKEN` | Token delegado proporcionado por el SIN | `eyJ0eX...`                                        |
-| `SIAT_NIT` | NIT del emisor | `123456789`                                        |
-| `SIAT_CODIGO_SISTEMA` | Código del sistema certificado | `ABC123XYZ`                                        |
-| `SIAT_CODIGO_AMBIENTE` | Código de ambiente (1: Producción, 2: Pruebas) | `2`                                                |
-| `SIAT_CODIGO_MODALIDAD` | Código de modalidad (1: Electrónica, 2: Computarizada) | `1`                                                |
-| `SIAT_URL` | Endpoint base del SIAT (Pruebas/Producción) | `https://pilotosiatservicios.impuestos.gob.bo/...` |
+### Instalación
 
----
-
-## 🧪 Testing
-
-El proyecto incluye una suite de pruebas unitarias y de integración para validar la comunicación con el SIAT.
-
-### Ejecutar todas las pruebas
 ```bash
-go test ./...
+go get github.com/ron86i/go-siat@latest
 ```
 
-### Ejecutar pruebas del servicio SIAT (con logs)
-```bash
-go test -v ./internal/adapter/service/siat/...
+### Uso Básico
+
+```go
+package main
+
+import (
+    "context"
+    "log"
+    "github.com/ron86i/go-siat"
+    "github.com/ron86i/go-siat/pkg/config"
+    "github.com/ron86i/go-siat/pkg/models"
+)
+
+func main() {
+    // 1. Inicializar el SDK
+    s, err := siat.New("https://pilotosiatservicios.impuestos.gob.bo/v2", nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    // 2. Usar un Builder para crear una solicitud
+    req := models.Codigos.NewCuisRequest().
+        WithNit(123456789).
+        WithCodigoAmbiente(2).
+        WithCodigoSistema("ABC123XYZ").
+        Build()
+
+    // 3. Ejecutar la operación
+    ctx := context.Background()
+    cfg := config.Config{Token: "TU_TOKEN_API"}
+    
+    resp, err := s.Codigos.SolicitudCuis(ctx, cfg, req)
+    if err == nil {
+        log.Println("CUIS:", resp.Body.Content.RespuestaCuis.Codigo)
+    }
+}
 ```
 
-> [!IMPORTANT]
-> Para ejecutar las pruebas de integración con el SIAT, asegúrese de tener configuradas las variables de entorno correctas en su archivo `.env`.
+---
 
-## 🤝 Contribución y Soporte
+## 📦 Ejemplos por Módulo
 
-¡Las contribuciones son lo que hacen que la comunidad de código abierto sea un lugar increíble para aprender, inspirar y crear!
+Puedes encontrar ejemplos detallados y ejecutables en la carpeta [`examples/`](./examples):
 
-- Si deseas colaborar, consulta nuestra [Guía de Contribución](CONTRIBUTING.md).
-- Para apoyo financiero o soporte técnico especializado, revisa nuestra sección de [Soporte y Financiación](SUPPORT.md).
+- **[Códigos](./examples/codigos/main.go)**: Flujo de CUIS y CUFD.
+- **[Sincronización](./examples/sincronizacion/main.go)**: Catálogos y productos.
+- **[Operaciones](./examples/operaciones/main.go)**: Puntos de venta y eventos.
+- **[Compra y Venta](./examples/compra_venta/main.go)**: Firma y envío de facturas.
+
+---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT. Para más información, consulte el archivo [LICENSE](LICENSE).
+Este proyecto está bajo la Licencia MIT.

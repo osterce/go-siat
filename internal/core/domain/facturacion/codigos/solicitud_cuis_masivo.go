@@ -18,7 +18,7 @@ type SolicitudCuisMasivoSistemas struct {
 	CodigoModalidad int                     `xml:"codigoModalidad" json:"codigoModalidad"`
 	CodigoSistema   string                  `xml:"codigoSistema" json:"codigoSistema"`
 	DatosSolicitud  []SolicitudListaCuisDto `xml:"datosSolicitud" json:"datosSolicitud"`
-	NIT             int64                   `xml:"nit" json:"nit"`
+	Nit             int64                   `xml:"nit" json:"nit"`
 }
 
 // SolicitudListaCuisDto detalla la sucursal y el punto de venta específicos para los cuales

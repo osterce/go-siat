@@ -20,7 +20,7 @@ type SolicitudNotifcaRevocado struct {
 	CodigoSucursal  int        `xml:"codigoSucursal" json:"codigoSucursal"`
 	Cuis            string     `xml:"cuis" json:"cuis"`
 	FechaRevocacion *time.Time `xml:"fechaRevocacion" json:"fechaRevocacion"`
-	NIT             int64      `xml:"nit" json:"nit"`
+	Nit             int64      `xml:"nit" json:"nit"`
 	RazonRevocacion string     `xml:"razonRevocacion" json:"razonRevocacion"`
 }
 

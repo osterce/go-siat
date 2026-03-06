@@ -49,3 +49,7 @@ func (t *TimeSiat) UnmarshalXML(d *xml.Decoder, start xml.StartElement) error {
 func (t TimeSiat) ToTime() time.Time {
 	return time.Time(t)
 }
+
+func NewTimeSiat(t time.Time) TimeSiat {
+	return TimeSiat(t)
+}
