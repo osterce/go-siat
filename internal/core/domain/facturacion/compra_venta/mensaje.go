@@ -8,9 +8,9 @@ type MensajeServicio struct {
 }
 
 type RespuestaServicioFacturacion struct {
-	CodigoDescripcion string            `xml:"codigoDescripcion,omitempty" json:"codigoDescripcion"`
-	CodigoEstado      int               `xml:"codigoEstado,omitempty" json:"codigoEstado"`
-	CodigoRecepcion   string            `xml:"codigoRecepcion,omitempty" json:"codigoRecepcion"`
-	MensajesList      []MensajeServicio `xml:"mensajesList,omitempty" json:"mensajesList"`
-	Transaccion       bool              `xml:"transaccion,omitempty" json:"transaccion"`
+	CodigoDescripcion string            `xml:"codigoDescripcion" json:"codigoDescripcion"`
+	CodigoEstado      int               `xml:"codigoEstado" json:"codigoEstado"`
+	CodigoRecepcion   string            `xml:"codigoRecepcion" json:"codigoRecepcion"`
+	MensajesList      []MensajeServicio `xml:"mensajesList" json:"mensajesList"`
+	Transaccion       bool              `xml:"transaccion" json:"transaccion"`
 }
