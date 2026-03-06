@@ -16,11 +16,11 @@ type Cufd struct {
 type SolicitudCufd struct {
 	CodigoAmbiente   int    `xml:"codigoAmbiente" json:"codigoAmbiente"`
 	CodigoModalidad  int    `xml:"codigoModalidad" json:"codigoModalidad"`
-	CodigoPuntoVenta *int   `xml:"codigoPuntoVenta" json:"codigoPuntoVenta"` // Opcional, puede ser nulo
+	CodigoPuntoVenta int    `xml:"codigoPuntoVenta" json:"codigoPuntoVenta"` // Opcional, puede ser nulo
 	CodigoSistema    string `xml:"codigoSistema" json:"codigoSistema"`
 	CodigoSucursal   int    `xml:"codigoSucursal" json:"codigoSucursal"`
 	Cuis             string `xml:"cuis" json:"cuis"`
-	NIT              int64  `xml:"nit" json:"nit"`
+	Nit              int64  `xml:"nit" json:"nit"`
 }
 
 // CufdResponse define la estructura del sobre de respuesta SOAP tras solicitar un CUFD.

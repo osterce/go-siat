@@ -3,25 +3,27 @@ package service
 import (
 	"encoding/xml"
 	"fmt"
-	"log"
 
 	"io"
 	"net/http"
+
 	"github.com/ron86i/go-siat/internal/core/domain/datatype/soap"
 )
 
-// fullURLCodigos construye la URL completa para acceder al servicio de facturación de códigos del SIAT,
-// concatenando la URL base del ambiente con el endpoint específico del servicio.
-func fullURLCodigos(url string) string {
-	return url + "/FacturacionCodigos"
-}
+// SiatService define los diferentes servicios disponibles en el SIAT.
+type SiatService string
 
-func fullURLOperaciones(url string) string {
-	return url + "/FacturacionOperaciones"
-}
+const (
+	SiatCodigos        SiatService = "FacturacionCodigos"
+	SiatOperaciones    SiatService = "FacturacionOperaciones"
+	SiatSincronizacion SiatService = "FacturacionSincronizacion"
+	SiatCompraVenta    SiatService = "ServicioFacturacionCompraVenta"
+)
 
-func fullURLSincronizacion(url string) string {
-	return url + "/FacturacionSincronizacion"
+// fullURL construye la URL completa para acceder a un servicio específico del SIAT,
+// concatenando la URL base del ambiente con el endpoint del servicio solicitado.
+func fullURL(baseURL string, service SiatService) string {
+	return baseURL + "/" + string(service)
 }
 
 // buildRequest encapsula un objeto de solicitud genérico dentro de un sobre SOAP estándar (Envelope),
@@ -68,7 +70,6 @@ func parseSoapResponse[T any](resp *http.Response) (*soap.EnvelopeResponse[T], e
 
 	// Si el status es 200 pero hubo un error de parseo, informar el error de XML
 	if errUnmarshal != nil {
-		log.Printf("[ERROR) Error parseando XML respuesta: %v", errUnmarshal)
 		return nil, fmt.Errorf("error al parsear respuesta SOAP: %w", errUnmarshal)
 	}
 

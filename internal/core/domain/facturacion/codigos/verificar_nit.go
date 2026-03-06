@@ -16,7 +16,7 @@ type SolicitudVerificarNit struct {
 	CodigoSistema       string `xml:"codigoSistema" json:"codigoSistema"`
 	CodigoSucursal      int    `xml:"codigoSucursal" json:"codigoSucursal"`
 	Cuis                string `xml:"cuis" json:"cuis"`
-	NIT                 int64  `xml:"nit" json:"nit"`
+	Nit                 int64  `xml:"nit" json:"nit"`
 	NitParaVerificacion int64  `xml:"nitParaVerificacion" json:"nitParaVerificacion"`
 }
 
