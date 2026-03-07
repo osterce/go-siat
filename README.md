@@ -95,7 +95,7 @@ func main() {
 Puedes encontrar ejemplos detallados y ejecutables en la carpeta [`examples/`](./examples):
 
 - **[Códigos](./examples/codigos/main.go)**: Flujo de CUIS y CUFD.
-- **[Sincronización](./examples/sincronizacion/main.go)**: Catálogos y productos.
+- **[Sincronización](./examples/sincronizacion/main.go)**: Catálogos y actividades.
 - **[Operaciones](./examples/operaciones/main.go)**: Puntos de venta y eventos.
 - **[Compra y Venta](./examples/compra_venta/main.go)**: Firma y envío de facturas.
 
