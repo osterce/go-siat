@@ -6,7 +6,6 @@ import (
 
 	"github.com/ron86i/go-siat/internal/core/domain/datatype"
 	"github.com/ron86i/go-siat/internal/core/domain/facturacion/compra_venta"
-	"github.com/ron86i/go-siat/pkg/util"
 )
 
 // --- Interfaces opacas para restringir el acceso a los atributos ---
@@ -32,16 +31,6 @@ type compraVentaNamespace struct{}
 
 // CompraVenta expone utilidades y constructores de solicitudes para el módulo de Facturación del SIAT.
 var CompraVenta = compraVentaNamespace{}
-
-// GenerarCUF genera el código único de factura.
-func (compraVentaNamespace) GenerarCUF(nit int64, fechaHora time.Time, sucursal int, modalidad, tipoEmision, tipoFactura int, tipoDocumentoSector int, numeroFactura int, puntoVenta int, codigoControl string) (string, error) {
-	return util.GenerarCUF(nit, fechaHora, sucursal, modalidad, tipoEmision, tipoFactura, tipoDocumentoSector, numeroFactura, puntoVenta, codigoControl)
-}
-
-// SignXML firma un documento XML de factura.
-func (compraVentaNamespace) SignXML(xmlBytes []byte, keyPath, certPath string) ([]byte, error) {
-	return util.SignXML(xmlBytes, keyPath, certPath)
-}
 
 // --- Builders para la creación de solicitudes ---
 
@@ -191,13 +180,13 @@ func (b *RecepcionFacturaBuilder) WithTipoFacturaDocumento(tipoFacturaDocumento 
 	return b
 }
 
-func (b *RecepcionFacturaBuilder) WithArchivo(archivo []byte) *RecepcionFacturaBuilder {
+func (b *RecepcionFacturaBuilder) WithArchivo(archivo string) *RecepcionFacturaBuilder {
 	b.request.SolicitudServicioRecepcionFactura.Archivo = archivo
 	return b
 }
 
-func (b *RecepcionFacturaBuilder) WithFechaEnvio(fechaEnvio datatype.TimeSiat) *RecepcionFacturaBuilder {
-	b.request.SolicitudServicioRecepcionFactura.FechaEnvio = fechaEnvio
+func (b *RecepcionFacturaBuilder) WithFechaEnvio(fechaEnvio time.Time) *RecepcionFacturaBuilder {
+	b.request.SolicitudServicioRecepcionFactura.FechaEnvio = datatype.NewTimeSiat(fechaEnvio)
 	return b
 }
 
@@ -210,9 +199,9 @@ func (b *RecepcionFacturaBuilder) Build() RecepcionFacturaRequest {
 	return requestWrapper[compra_venta.RecepcionFactura]{request: b.request}
 }
 
-// NewFactura inicia la construcción de una FacturaCompraVenta.
-func (compraVentaNamespace) NewFactura() *FacturaBuilder {
-	return &FacturaBuilder{
+// NewFacturaCompraVenta inicia la construcción de una FacturaCompraVenta.
+func (compraVentaNamespace) NewFacturaCompraVenta() *FacturaCompraVentaBuilder {
+	return &FacturaCompraVentaBuilder{
 		factura: &compra_venta.FacturaCompraVenta{
 			XMLName:           xml.Name{Local: "facturaElectronicaCompraVenta"},
 			XmlnsXsi:          "http://www.w3.org/2001/XMLSchema-instance",
@@ -235,25 +224,38 @@ func (compraVentaNamespace) NewDetalle() *DetalleBuilder {
 	}
 }
 
-type FacturaBuilder struct {
+type FacturaCompraVentaBuilder struct {
 	factura *compra_venta.FacturaCompraVenta
 }
 
-func (b *FacturaBuilder) WithCabecera(req CabeceraRequest) *FacturaBuilder {
+func (b *FacturaCompraVentaBuilder) WithCabecera(req CabeceraRequest) *FacturaCompraVentaBuilder {
 	if c := GetInternalRequest[compra_venta.Cabecera](req); c != nil {
 		b.factura.Cabecera = *c
 	}
 	return b
 }
 
-func (b *FacturaBuilder) AddDetalle(req DetalleRequest) *FacturaBuilder {
+func (b *FacturaCompraVentaBuilder) AddDetalle(req DetalleRequest) *FacturaCompraVentaBuilder {
 	if d := GetInternalRequest[compra_venta.Detalle](req); d != nil {
 		b.factura.Detalle = append(b.factura.Detalle, *d)
 	}
 	return b
 }
 
-func (b *FacturaBuilder) Build() FacturaRequest {
+func (b *FacturaCompraVentaBuilder) WithModalidad(tipo int) *FacturaCompraVentaBuilder {
+
+	switch tipo {
+	case 1:
+		b.factura.XMLName = xml.Name{Local: "facturaElectronicaCompraVenta"}
+		b.factura.XsiSchemaLocation = "facturaElectronicaCompraVenta.xsd"
+	case 2:
+		b.factura.XMLName = xml.Name{Local: "facturaComputarizadaCompraVenta"}
+		b.factura.XsiSchemaLocation = "facturaComputarizadaCompraVenta.xsd"
+	}
+	return b
+}
+
+func (b *FacturaCompraVentaBuilder) Build() FacturaRequest {
 	return requestWrapper[compra_venta.FacturaCompraVenta]{request: b.factura}
 }
 

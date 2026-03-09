@@ -28,7 +28,7 @@ type SolicitudRecepcion struct {
 
 type SolicitudRecepcionFactura struct {
 	SolicitudRecepcion
-	Archivo     []byte            `xml:"archivo" json:"archivo"`
+	Archivo     string            `xml:"archivo" json:"archivo"`
 	FechaEnvio  datatype.TimeSiat `xml:"fechaEnvio" json:"fechaEnvio"`
 	HashArchivo string            `xml:"hashArchivo" json:"hashArchivo"`
 }

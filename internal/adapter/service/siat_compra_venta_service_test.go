@@ -20,7 +20,7 @@ import (
 	"github.com/ron86i/go-siat/internal/core/domain/facturacion/codigos"
 	"github.com/ron86i/go-siat/internal/core/domain/facturacion/compra_venta"
 	"github.com/ron86i/go-siat/pkg/config"
-	"github.com/ron86i/go-siat/pkg/util"
+	"github.com/ron86i/go-siat/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -28,9 +28,9 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 	godotenv.Load(".env")
 
 	// ... (Mantener parseo de variables de entorno igual hasta la creación de servicios)
-	codModalidad, _ := util.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
-	nit, _ := util.ParseInt64Safe(os.Getenv("SIAT_NIT"))
-	codAmbiente, _ := util.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
 	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
 
 	client := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
@@ -62,7 +62,7 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 
 	fechaEmision := time.Now()
 	// 1. Generar CUF
-	cuf, err := util.GenerarCUF(nit, fechaEmision, 0, codModalidad, 1, 1, 1, 1, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
+	cuf, err := utils.GenerarCUF(nit, fechaEmision, 0, codModalidad, 1, 1, 1, 1, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
 	if err != nil {
 		t.Fatalf("error al generar CUF: %v", err)
 	}
@@ -105,7 +105,7 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 
 	// 2. Serializar y Firmar
 	xmlData, _ := xml.Marshal(factura)
-	signedXML, err := util.SignXML(xmlData, "key.pem", "cert.crt")
+	signedXML, err := utils.SignXML(xmlData, "key.pem", "cert.crt")
 	if err != nil {
 		t.Fatalf("error firmando XML: %v", err)
 	}
@@ -124,7 +124,7 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 	hash := sha256.Sum256(compressedBytes)
 	hashString := hex.EncodeToString(hash[:])
 
-	// 5. CODIFICAR A BASE64 (Paso crítico que faltaba)
+	// 5. CODIFICAR A BASE64
 	encodedArchivo := base64.StdEncoding.EncodeToString(compressedBytes)
 
 	req := &compra_venta.RecepcionFactura{
@@ -136,7 +136,7 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 				CodigoPuntoVenta: 0, Cufd: cufd.Body.Content.RespuestaCufd.Codigo,
 				Cuis: cuis.Body.Content.RespuestaCuis.Codigo, TipoFacturaDocumento: 1,
 			},
-			Archivo:     []byte(encodedArchivo), // Se envía la cadena base64 como slice de bytes
+			Archivo:     encodedArchivo, // Se envía la cadena base64 como slice de bytes
 			FechaEnvio:  datatype.NewTimeSiat(fechaEmision),
 			HashArchivo: hashString,
 		},
@@ -154,9 +154,9 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 func TestSiatCompraVentaService_AnulacionFactura(t *testing.T) {
 	godotenv.Load(".env")
 
-	codModalidad, _ := util.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
-	nit, _ := util.ParseInt64Safe(os.Getenv("SIAT_NIT"))
-	codAmbiente, _ := util.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
 	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
 
 	client := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
@@ -188,7 +188,7 @@ func TestSiatCompraVentaService_AnulacionFactura(t *testing.T) {
 
 	fechaEmision := time.Now()
 	// Generar CUF de la factura que supuestamente vamos a anular
-	cuf, err := util.GenerarCUF(nit, fechaEmision, 0, codModalidad, 1, 1, 1, 1, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
+	cuf, err := utils.GenerarCUF(nit, fechaEmision, 0, codModalidad, 1, 1, 1, 1, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
 	if err != nil {
 		t.Fatalf("error al generar CUF: %v", err)
 	}
