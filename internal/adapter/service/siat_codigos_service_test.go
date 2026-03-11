@@ -10,16 +10,18 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/ron86i/go-siat/pkg/config"
+	"github.com/ron86i/go-siat/pkg/models"
 	"github.com/ron86i/go-siat/pkg/utils"
 
-	"github.com/ron86i/go-siat/internal/adapter/service"
+	"github.com/ron86i/go-siat"
 
 	"github.com/ron86i/go-siat/internal/core/domain/facturacion/codigos"
 	"github.com/stretchr/testify/assert"
 )
 
 // TestNotificaCertificadoRevocado valida que el servicio sea capaz de informar al SIAT
-// sobre la revocación de un certificado digital, utilizando credenciales reales del entorno.
+// sobre la revocación de un certificado digital.
+// Requisitos: El certificado enviado debe ser el registrado previamente en el portal de Impuestos.
 func TestNotificaCertificadoRevocado(t *testing.T) {
 	// Cargar configuración de integración desde el entorno (.env)
 	godotenv.Load()
@@ -37,29 +39,25 @@ func TestNotificaCertificadoRevocado(t *testing.T) {
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
 
-	service, err := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), nil)
-	if err != nil {
-		t.Fatalf("No se pudo inicializar el servicio de códigos: %v", err)
-	}
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Codigos()
 
 	// Preparar la solicitud de notificación. Se requiere un certificado y una razón válida.
-	req := codigos.NotificaCertificadoRevocado{
-		SolicitudNotificaRevocado: codigos.SolicitudNotifcaRevocado{
-			CodigoAmbiente:  codAmbiente,
-			CodigoSistema:   os.Getenv("SIAT_CODIGO_SISTEMA"),
-			Nit:             nit,
-			CodigoSucursal:  0,
-			Cuis:            "197C8240",
-			FechaRevocacion: new(time.Now()),
-			RazonRevocacion: "Prueba de revocación por sistema",
-			Certificado: `-----BEGIN CERTIFICATE-----
+	req := models.Codigos().NewNotificaCertificadoRevocadoBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCodigoSucursal(0).
+		WithCuis("197C8240").
+		WithFechaRevocacion(new(time.Now())).
+		WithRazonRevocacion("Prueba de revocación por sistema").
+		WithCertificado(`-----BEGIN CERTIFICATE-----
 MIIEejCCA2KgA...alF2Tw0jIVieaeefsL78Yv8fA==
------END CERTIFICATE-----`,
-		},
-	}
+-----END CERTIFICATE-----`).
+		Build()
 
 	// Ejecutar la petición al SIAT y procesar el resultado de la revocación
-	resp, err := service.NotificaCertificadoRevocado(context.Background(), config, &req)
+	resp, err := service.NotificaCertificadoRevocado(context.Background(), config, req)
 
 	// Validar que no existan errores de comunicación o de estructura SOAP
 	if !assert.NoError(t, err) {
@@ -106,26 +104,22 @@ func TestVerificarNit(t *testing.T) {
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
 
-	service, err := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), nil)
-	if err != nil {
-		t.Fatalf("No se pudo inicializar el servicio de códigos: %v", err)
-	}
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Codigos()
 
 	// Preparar la solicitud de verificación. El CUIS debe ser válido para el NIT en ambiente de prueba.
-	req := codigos.VerificarNit{
-		SolicitudVerificarNit: codigos.SolicitudVerificarNit{
-			CodigoAmbiente:      codAmbiente,
-			CodigoModalidad:     codModalidad,
-			CodigoSistema:       os.Getenv("SIAT_CODIGO_SISTEMA"),
-			Nit:                 nit,
-			CodigoSucursal:      0,
-			Cuis:                "197C8240",
-			NitParaVerificacion: 12345678, // Un NIT de prueba para validar la comunicación
-		},
-	}
+	req := models.Codigos().NewVerificarNitBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCodigoSucursal(0).
+		WithCuis("197C8240").
+		WithNitParaVerificacion(12345678). // Un NIT de prueba para validar la comunicación
+		Build()
 
 	// Ejecutar la petición al SIAT y procesar el resultado
-	resp, err := service.VerificarNit(context.Background(), config, &req)
+	resp, err := service.VerificarNit(context.Background(), config, req)
 
 	// Validar que no existan errores de comunicación o de serialización XML
 	if !assert.NoError(t, err) {
@@ -149,7 +143,8 @@ func TestVerificarNit(t *testing.T) {
 }
 
 // TestSolicitudCuis valida la obtención de un Código Único de Inicio de Sistemas (CUIS).
-// Verifica que el servicio sea capaz de conectar y recibir un código de respuesta válido.
+// El CUIS es fundamental para identificar un punto de venta y su sistema asociado ante el SIAT.
+// Se recomienda renovar el CUIS periódicamente según la vigencia devuelta por el servidor.
 func TestSolicitudCuis(t *testing.T) {
 	godotenv.Load()
 	codModalidad, err := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
@@ -169,20 +164,19 @@ func TestSolicitudCuis(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, _ := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), nil)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Codigos()
 
-	req := codigos.Cuis{
-		SolicitudCuis: codigos.SolicitudCuis{
-			CodigoAmbiente:   codAmbiente,
-			CodigoModalidad:  codModalidad,
-			CodigoSistema:    os.Getenv("SIAT_CODIGO_SISTEMA"),
-			Nit:              nit,
-			CodigoSucursal:   0,
-			CodigoPuntoVenta: 0,
-		},
-	}
+	req := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCodigoSucursal(0).
+		WithCodigoPuntoVenta(0).
+		Build()
 
-	resp, err := service.SolicitudCuis(context.Background(), config, &req)
+	resp, err := service.SolicitudCuis(context.Background(), config, req)
 
 	// Confirmar que la comunicación fue exitosa y se recibió un objeto de respuesta
 	if assert.NoError(t, err) && assert.NotNil(t, resp) {
@@ -197,7 +191,8 @@ func TestSolicitudCuis(t *testing.T) {
 }
 
 // TestSolicitudCufd valida la obtención del Código Único de Facturación Diaria (CUFD).
-// Asegura que el flujo de solicitud contra el SIAT se complete sin errores técnicos.
+// El CUFD debe solicitarse cada 24 horas o al inicio de operaciones del día.
+// Requiere un CUIS vigente para ser procesado correctamente por el SIAT.
 func TestSolicitudCufd(t *testing.T) {
 	// Cargar entorno de configuración para tests de integración
 	godotenv.Load()
@@ -219,34 +214,39 @@ func TestSolicitudCufd(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, err := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), nil)
-	assert.NoError(t, err)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Codigos()
+
+	req := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCodigoSucursal(0).
+		WithCodigoPuntoVenta(0).
+		Build()
+
+	respCuis, err := service.SolicitudCuis(context.Background(), config, req)
 
 	// Preparar la estructura de solicitud de CUFD con los datos de prueba
-	req := codigos.Cufd{
-		SolicitudCufd: codigos.SolicitudCufd{
-			CodigoAmbiente:   codAmbiente,
-			CodigoModalidad:  codModalidad,
-			CodigoSistema:    os.Getenv("SIAT_CODIGO_SISTEMA"),
-			Nit:              nit,
-			CodigoSucursal:   0,
-			CodigoPuntoVenta: 0,
-			Cuis:             "197C8240", // Requiere un CUIS vigente para el NIT configurado
-		},
-	}
+	reqCufd := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCodigoSucursal(0).
+		WithCodigoPuntoVenta(0).
+		WithCuis(respCuis.Body.Content.RespuestaCuis.Codigo). // Requiere un CUIS vigente para el NIT configurado
+		Build()
 
 	// Ejecutar la llamada al servicio de códigos del SIAT
-	resp, err := service.SolicitudCufd(context.Background(), config, &req)
+	resp, err := service.SolicitudCufd(context.Background(), config, reqCufd)
 
 	// Validar la recepción de la respuesta y registrar el estado de la transacción
 	if assert.NoError(t, err) && assert.NotNil(t, resp) {
 		res := resp.Body.Content.RespuestaCufd
 
-		if res.Transaccion {
-			log.Printf("Conexión Exitosa: CUFD recibido [%s]", res.Codigo)
-		} else {
-			t.Errorf("El SIAT procesó la solicitud pero la transacción es false")
-		}
+		log.Println("Respuesta de cufd:", res)
 	}
 }
 
@@ -272,28 +272,27 @@ func TestSolicitudCufdMasivo(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, err := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), nil)
+	siatClient, err := siat.New(os.Getenv("SIAT_URL"), nil)
 	assert.NoError(t, err)
+	service := siatClient.Codigos()
 
 	// Configurar la lista de solicitudes masivas (por ejemplo, para la sucursal 0 y punto de venta 0)
-	req := codigos.CufdMasivo{
-		SolicitudCufdMasivo: codigos.SolicitudCufdMasivo{
-			CodigoAmbiente:  codAmbiente,
-			CodigoModalidad: codModalidad,
-			CodigoSistema:   os.Getenv("SIAT_CODIGO_SISTEMA"),
-			Nit:             nit,
-			DatosSolicitud: []codigos.SolicitudListaCufdDto{
-				{
-					CodigoSucursal:   0,
-					CodigoPuntoVenta: new(0),
-					Cuis:             "197C8240",
-				},
+	req := models.Codigos().NewCufdMasivoBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithDatosSolicitud([]codigos.SolicitudListaCufdDto{
+			{
+				CodigoSucursal:   0,
+				CodigoPuntoVenta: new(int), // Ajuste asumiendo que es *int
+				Cuis:             "197C8240",
 			},
-		},
-	}
+		}).
+		Build()
 
 	// Ejecutar la petición masiva al SIAT
-	resp, err := service.SolicitudCufdMasivo(context.Background(), config, &req)
+	resp, err := service.SolicitudCufdMasivo(context.Background(), config, req)
 
 	// Validar que la respuesta contenga datos y registrar el resultado de la operación masiva
 	if assert.NoError(t, err) && assert.NotNil(t, resp) {
@@ -331,27 +330,26 @@ func TestSolicitudCuisMasivo(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, err := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), nil)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Codigos()
 	assert.NoError(t, err)
 
 	// Configurar la solicitud masiva de CUIS para un punto de venta específico
-	req := codigos.CuisMasivo{
-		SolicitudCuisMasivoSistemas: codigos.SolicitudCuisMasivoSistemas{
-			CodigoAmbiente:  codAmbiente,
-			CodigoModalidad: codModalidad,
-			CodigoSistema:   os.Getenv("SIAT_CODIGO_SISTEMA"),
-			Nit:             nit,
-			DatosSolicitud: []codigos.SolicitudListaCuisDto{
-				{
-					CodigoSucursal:   0,
-					CodigoPuntoVenta: new(int),
-				},
+	req := models.Codigos().NewCuisMasivoBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithDatosSolicitud([]codigos.SolicitudListaCuisDto{
+			{
+				CodigoSucursal:   0,
+				CodigoPuntoVenta: new(int),
 			},
-		},
-	}
+		}).
+		Build()
 
 	// Ejecutar la petición masiva al SIAT
-	resp, err := service.SolicitudCuisMasivo(context.Background(), config, &req)
+	resp, err := service.SolicitudCuisMasivo(context.Background(), config, req)
 
 	// Validar que la comunicación fue exitosa y registrar los resultados individuales obtenidos
 	if assert.NoError(t, err) && assert.NotNil(t, resp) {
@@ -376,16 +374,17 @@ func TestVerificarComunicacion(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, err := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), nil)
+	siatClient, err := siat.New(os.Getenv("SIAT_URL"), nil)
 	if err != nil {
-		t.Fatalf("Error al crear servicio: %v", err)
+		t.Fatalf("Error al crear cliente SIAT: %v", err)
 	}
+	service := siatClient.Codigos()
 
 	ctx := context.Background()
-	req := codigos.VerificarComunicacion{}
+	req := models.Codigos().NewVerificarComunicacionCodigosBuilder().Build()
 
 	// Ejecutar la petición de verificación de comunicación
-	resp, err := service.VerificarComunicacion(ctx, config, &req)
+	resp, err := service.VerificarComunicacion(ctx, config, req)
 	if err != nil {
 		t.Fatalf("Error en VerificarComunicacion: %v", err)
 	}

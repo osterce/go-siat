@@ -9,14 +9,16 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/ron86i/go-siat/internal/adapter/service"
+	"github.com/ron86i/go-siat"
 	"github.com/ron86i/go-siat/pkg/config"
 
-	"github.com/ron86i/go-siat/internal/core/domain/facturacion/operaciones"
+	"github.com/ron86i/go-siat/pkg/models"
 	"github.com/ron86i/go-siat/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
+// TestRegistroPuntoVenta valida la creación de un nuevo punto de venta ante el SIAT.
+// Los puntos de venta son necesarios para organizar la facturación por sucursales o terminales.
 func TestRegistroPuntoVenta(t *testing.T) {
 	godotenv.Load()
 
@@ -37,26 +39,22 @@ func TestRegistroPuntoVenta(t *testing.T) {
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
 
-	service, err := service.NewSiatOperacionesService(os.Getenv("SIAT_URL"), nil)
-	if err != nil {
-		t.Fatalf("No se pudo inicializar el servicio de operaciones: %v", err)
-	}
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Operaciones()
 
-	req := operaciones.RegistroPuntoVenta{
-		SolicitudRegistroPuntoVenta: operaciones.SolicitudRegistroPuntoVenta{
-			CodigoAmbiente:       codAmbiente,
-			CodigoModalidad:      codModalidad,
-			CodigoSistema:        os.Getenv("SIAT_CODIGO_SISTEMA"),
-			CodigoSucursal:       0,
-			CodigoTipoPuntoVenta: 2, // Tipo de punto de venta (2,3,4,5,6)
-			Cuis:                 "197C8240",
-			Descripcion:          "Punto de Venta Prueba 1",
-			Nit:                  nit,
-			NombrePuntoVenta:     "PV1",
-		},
-	}
+	req := models.Operaciones().NewRegistroPuntoVentaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCodigoTipoPuntoVenta(2). // Tipo de punto de venta (2,3,4,5,6)
+		WithCuis("197C8240").
+		WithDescripcion("Punto de Venta Prueba 1").
+		WithNit(nit).
+		WithNombrePuntoVenta("PV1").
+		Build()
 
-	resp, err := service.RegistroPuntoVenta(context.Background(), config, &req)
+	resp, err := service.RegistroPuntoVenta(context.Background(), config, req)
 
 	if !assert.NoError(t, err) {
 		t.Fatalf("Fallo en la comunicación con el SIAT: %v", err)
@@ -98,30 +96,26 @@ func TestRegistroPuntoVentaComisionista(t *testing.T) {
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
 
-	service, err := service.NewSiatOperacionesService(os.Getenv("SIAT_URL"), nil)
-	if err != nil {
-		t.Fatalf("No se pudo inicializar el servicio de operaciones: %v", err)
-	}
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Operaciones()
 
 	now := time.Now()
-	req := operaciones.RegistroPuntoVentaComisionista{
-		SolicitudPuntoVentaComisionista: operaciones.SolicitudPuntoVentaComisionista{
-			CodigoAmbiente:   codAmbiente,
-			CodigoModalidad:  codModalidad,
-			CodigoSistema:    os.Getenv("SIAT_CODIGO_SISTEMA"),
-			CodigoSucursal:   0,
-			Cuis:             "197C8240",
-			Descripcion:      "Comisionista Prueba SIAT",
-			FechaInicio:      now,
-			FechaFin:         now.Add(24 * time.Hour),
-			Nit:              nit,
-			NitComisionista:  425951025, // Reemplazar por un NIT comisionista válido si es necesario
-			NombrePuntoVenta: "COM-SIAT",
-			NumeroContrato:   "CONT-001",
-		},
-	}
+	req := models.Operaciones().NewRegistroPuntoVentaComisionistaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCuis("197C8240").
+		WithDescripcion("Comisionista Prueba SIAT").
+		WithFechaInicio(now).
+		WithFechaFin(now.Add(24 * time.Hour)).
+		WithNit(nit).
+		WithNitComisionista(425951025). // Reemplazar por un NIT comisionista válido si es necesario
+		WithNombrePuntoVenta("COM-SIAT").
+		WithNumeroContrato("CONT-001").
+		Build()
 
-	resp, err := service.RegistroPuntoVentaComisionista(context.Background(), config, &req)
+	resp, err := service.RegistroPuntoVentaComisionista(context.Background(), config, req)
 
 	if err != nil {
 		log.Printf("Error/Soap Fault en RegistroPuntoVentaComisionista: %v", err)
@@ -137,14 +131,16 @@ func TestRegistroPuntoVentaComisionista(t *testing.T) {
 	}
 }
 
+// TestOperacionesVerificarComunicacion valida la conectividad SOAP con el servicio de Operaciones.
 func TestOperacionesVerificarComunicacion(t *testing.T) {
 	godotenv.Load()
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, _ := service.NewSiatOperacionesService(os.Getenv("SIAT_URL"), nil)
-
-	resp, err := service.VerificarComunicacion(context.Background(), config)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Operaciones()
+	req := models.Operaciones().NewVerificarComunicacionBuilder().Build()
+	resp, err := service.VerificarComunicacion(context.Background(), config, req)
 
 	if assert.NoError(t, err) && assert.NotNil(t, resp) {
 		log.Printf("Respuesta: %v", resp)
@@ -159,19 +155,18 @@ func TestConsultaPuntoVenta(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, _ := service.NewSiatOperacionesService(os.Getenv("SIAT_URL"), nil)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Operaciones()
 
-	req := operaciones.ConsultaPuntoVenta{
-		SolicitudConsultaPuntoVenta: operaciones.SolicitudConsultaPuntoVenta{
-			CodigoAmbiente: 2,
-			CodigoSistema:  os.Getenv("SIAT_CODIGO_SISTEMA"),
-			CodigoSucursal: 0,
-			Cuis:           "197C8240",
-			Nit:            nit,
-		},
-	}
+	req := models.Operaciones().NewConsultaPuntoVentaBuilder().
+		WithCodigoAmbiente(2).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCuis("197C8240").
+		WithNit(nit).
+		Build()
 
-	resp, err := service.ConsultaPuntoVenta(context.Background(), config, &req)
+	resp, err := service.ConsultaPuntoVenta(context.Background(), config, req)
 
 	if assert.NoError(t, err) && assert.NotNil(t, resp) {
 		res := resp.Body.Content.Respuesta
@@ -188,20 +183,19 @@ func TestCierrePuntoVenta(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, _ := service.NewSiatOperacionesService(os.Getenv("SIAT_URL"), nil)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Operaciones()
 
-	req := operaciones.CierrePuntoVenta{
-		SolicitudCierrePuntoVenta: operaciones.SolicitudCierrePuntoVenta{
-			CodigoAmbiente:   2,
-			CodigoPuntoVenta: 13, // Un código que probablemente no exista o sea de prueba
-			CodigoSistema:    os.Getenv("SIAT_CODIGO_SISTEMA"),
-			CodigoSucursal:   0,
-			Cuis:             "197C8240",
-			Nit:              nit,
-		},
-	}
+	req := models.Operaciones().NewCierrePuntoVentaBuilder().
+		WithCodigoAmbiente(2).
+		WithCodigoPuntoVenta(13). // Un código que probablemente no exista o sea de prueba
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCuis("197C8240").
+		WithNit(nit).
+		Build()
 
-	resp, err := service.CierrePuntoVenta(context.Background(), config, &req)
+	resp, err := service.CierrePuntoVenta(context.Background(), config, req)
 
 	if err == nil && resp != nil {
 		log.Printf("Resultado Cierre PV: %v", resp.Body.Content.Respuesta.Transaccion)
@@ -216,21 +210,20 @@ func TestCierreOperacionesSistema(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, _ := service.NewSiatOperacionesService(os.Getenv("SIAT_URL"), nil)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Operaciones()
 
-	req := operaciones.CierreOperacionesSistema{
-		SolicitudOperaciones: operaciones.SolicitudOperaciones{
-			CodigoAmbiente:   2,
-			CodigoSistema:    os.Getenv("SIAT_CODIGO_SISTEMA"),
-			CodigoSucursal:   0,
-			Cuis:             "E97E7A16",
-			Nit:              nit,
-			CodigoModalidad:  1,
-			CodigoPuntoVenta: 1,
-		},
-	}
+	req := models.Operaciones().NewCierreOperacionesSistemaBuilder().
+		WithCodigoAmbiente(2).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCuis("E97E7A16").
+		WithNit(nit).
+		WithCodigoModalidad(1).
+		WithCodigoPuntoVenta(1).
+		Build()
 
-	resp, err := service.CierreOperacionesSistema(context.Background(), config, &req)
+	resp, err := service.CierreOperacionesSistema(context.Background(), config, req)
 
 	if err == nil && resp != nil {
 		log.Printf("Resultado Cierre Sistema: %v", resp.Body.Content.Respuesta)
@@ -239,33 +232,54 @@ func TestCierreOperacionesSistema(t *testing.T) {
 	}
 }
 
+// TestRegistroEventosSignificativos reporta sucesos que impiden la facturación en línea (contingencias).
+// Es obligatorio reportar el inicio y fin de estos eventos para justificar la facturación offline.
 func TestRegistroEventosSignificativos(t *testing.T) {
 	godotenv.Load()
 	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, _ := service.NewSiatOperacionesService(os.Getenv("SIAT_URL"), nil)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Operaciones()
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
 
+	serviceCodigos := siatClient.Codigos()
+	cuis, _ := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, _ := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
 	now := time.Now()
-	req := operaciones.RegistroEventoSignificativo{
-		SolicitudEventoSignificativo: operaciones.SolicitudEventoSignificativo{
-			CodigoAmbiente:        2,
-			CodigoMotivoEvento:    4,
-			CodigoSistema:         os.Getenv("SIAT_CODIGO_SISTEMA"),
-			CodigoSucursal:        0,
-			Cuis:                  "197C8240",
-			CufdEvento:            "FBQT5...",
-			Cufd:                  "FBQT5...",
-			Descripcion:           "Prueba de evento significativo",
-			FechaHoraInicioEvento: now.Add(-1 * time.Hour),
-			FechaHoraFinEvento:    now,
-			Nit:                   nit,
-			CodigoPuntoVenta:      0,
-		},
-	}
+	req := models.Operaciones().NewRegistroEventoSignificativoBuilder().
+		WithCodigoAmbiente(2).
+		WithCodigoMotivoEvento(4).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithCufdEvento("FBQT5CwqE4TERBI5RjlGOEM3MDc=QkFQMVZVTERhV...").
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithDescripcion("Prueba de evento significativo").
+		WithFechaHoraInicioEvento(now.Add(-1 * time.Minute)).
+		WithFechaHoraFinEvento(now).
+		WithNit(nit).
+		WithCodigoPuntoVenta(0).
+		Build()
 
-	resp, err := service.RegistroEventosSignificativos(context.Background(), config, &req)
+	resp, err := service.RegistroEventosSignificativos(context.Background(), config, req)
 
 	if err == nil && resp != nil {
 		log.Printf("Resultado Registro Evento: %v", resp.Body.Content)
@@ -280,21 +294,20 @@ func TestConsultaEventosSignificativos(t *testing.T) {
 	config := config.Config{
 		Token: os.Getenv("SIAT_TOKEN"),
 	}
-	service, _ := service.NewSiatOperacionesService(os.Getenv("SIAT_URL"), nil)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.Operaciones()
 
-	req := operaciones.ConsultaEventoSignificativo{
-		SolicitudConsultaEvento: operaciones.SolicitudConsultaEvento{
-			CodigoAmbiente:   2,
-			CodigoSistema:    os.Getenv("SIAT_CODIGO_SISTEMA"),
-			CodigoSucursal:   0,
-			Cuis:             "197C8240",
-			Nit:              nit,
-			FechaEvento:      time.Now(),
-			CodigoPuntoVenta: 0,
-		},
-	}
+	req := models.Operaciones().NewConsultaEventoSignificativoBuilder().
+		WithCodigoAmbiente(2).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCuis("197C8240").
+		WithNit(nit).
+		WithFechaEvento(time.Now()).
+		WithCodigoPuntoVenta(0).
+		Build()
 
-	resp, err := service.ConsultaEventosSignificativos(context.Background(), config, &req)
+	resp, err := service.ConsultaEventosSignificativos(context.Background(), config, req)
 
 	if assert.NoError(t, err) && assert.NotNil(t, resp) {
 		res := resp.Body.Content.Respuesta

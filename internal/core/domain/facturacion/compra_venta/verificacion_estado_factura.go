@@ -4,7 +4,7 @@ import "encoding/xml"
 
 type VerificacionEstadoFactura struct {
 	XMLName                                    xml.Name                    `xml:"ns:verificacionEstadoFactura" json:"-"`
-	SolicitudServicioVerificacionEstadoFactura SolicitudVerificacionEstado `xml:"SolicitudServicioVerificacionEstado" json:"solicitudServicioVerificacionEstado"`
+	SolicitudServicioVerificacionEstadoFactura SolicitudVerificacionEstado `xml:"SolicitudServicioVerificacionEstadoFactura" json:"solicitudServicioVerificacionEstado"`
 }
 
 type SolicitudVerificacionEstado struct {

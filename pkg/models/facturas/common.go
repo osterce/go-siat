@@ -1,4 +1,4 @@
-package models
+package facturas
 
 import (
 	"encoding/xml"
@@ -16,10 +16,10 @@ func (r requestWrapper[T]) MarshalXML(e *xml.Encoder, start xml.StartElement) er
 	return e.Encode(r.request)
 }
 
-// GetInternalRequest desempaqueta la estructura de solicitud concreta desde una interfaz opaca.
+// getInternalRequest desempaqueta la estructura de solicitud concreta desde una interfaz opaca.
 // Este método es utilizado internamente por los servicios para acceder a los campos de la solicitud.
 // Soporta tanto envolturas (wrappers) como punteros directos para mayor flexibilidad.
-func GetInternalRequest[T any](req any) *T {
+func getInternalRequest[T any](req any) *T {
 	if wrapper, ok := req.(requestWrapper[T]); ok {
 		return wrapper.request
 	}
@@ -28,3 +28,20 @@ func GetInternalRequest[T any](req any) *T {
 	}
 	return nil
 }
+
+const (
+	// ModalidadElectronica requiere firma digital de los documentos XML.
+	ModalidadElectronica = 1
+	// ModalidadComputarizada no requiere firma digital, usa un código de control.
+	ModalidadComputarizada = 2
+	// AmbienteProduccion para operaciones reales con validez tributaria.
+	AmbienteProduccion = 1
+	// AmbientePruebas para entornos de desarrollo y certificación.
+	AmbientePruebas = 2
+	// EmisionOnline emisión se realizó en línea
+	EmisionOnline = 1
+	// EmisionOffline emisión se realizó fuera de línea
+	EmisionOffline = 2
+	// EmisionMasiva para emisión masiva de factura
+	EmisionMasiva = 3
+)

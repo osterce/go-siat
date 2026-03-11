@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"archive/tar"
 	"bytes"
 	"compress/gzip"
 	"context"
@@ -8,57 +9,632 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/xml"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/ron86i/go-siat/internal/adapter/service"
-	"github.com/ron86i/go-siat/internal/core/domain/datatype"
-	"github.com/ron86i/go-siat/internal/core/domain/facturacion/codigos"
+	"github.com/ron86i/go-siat"
 	"github.com/ron86i/go-siat/internal/core/domain/facturacion/compra_venta"
 	"github.com/ron86i/go-siat/pkg/config"
+	"github.com/ron86i/go-siat/pkg/models"
+	"github.com/ron86i/go-siat/pkg/models/facturas"
 	"github.com/ron86i/go-siat/pkg/utils"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
+// TestSiatCompraVentaService_RecepcionAnexos servicio no disponible, falta verificación.
+// TestSiatCompraVentaService_RecepcionAnexos verifica el envío de anexos técnicos para facturas específicas.
+// Valida que el builder construya correctamente la solicitud con todos los campos obligatorios
+// y que el servicio procese la respuesta del SIAT usando el mapeo XML estandarizado.
+func TestSiatCompraVentaService_RecepcionAnexos(t *testing.T) {
 	godotenv.Load(".env")
 
-	// ... (Mantener parseo de variables de entorno igual hasta la creación de servicios)
 	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
 	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
 	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
 	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
 
 	client := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
-	serviceCodigos, _ := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), client)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), client)
+	serviceCodigos := siatClient.Codigos()
+	serviceCompraVenta := siatClient.CompraVenta()
 
-	// Solicitar CUIS y CUFD (Misma lógica que tenías)
-	cuis, err := serviceCodigos.SolicitudCuis(context.Background(), config, &codigos.Cuis{
-		SolicitudCuis: codigos.SolicitudCuis{
-			CodigoAmbiente: codAmbiente, CodigoModalidad: codModalidad,
-			CodigoSistema: os.Getenv("SIAT_CODIGO_SISTEMA"), Nit: nit,
-		},
-	})
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, _ := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
+
+	req := models.CompraVenta().NewRecepcionAnexosBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoPuntoVenta(0).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithNit(nit).
+		WithCuf("D5340CCDF031F0CFDBF6C8DEAD9D2DDD65A06606A19F03592115AAF74").
+		AddAnexo(compra_venta.VentaAnexo{
+			Codigo:         "1",
+			CodigoProducto: "86111",
+		}).
+		Build()
+
+	resp, err := serviceCompraVenta.RecepcionAnexos(context.Background(), config, req)
+
+	if assert.NoError(t, err) && assert.NotNil(t, resp) {
+		log.Printf("Respuesta Recepcion Anexos: %+v", resp.Body.Content)
+	}
+}
+
+// TestSiatCompraVentaService_VerificacionEstadoFactura valida la consulta del estado actual de una factura en el SIAT.
+// Verifica que se retorne la información de recepción y estado (Válida, Anulada, etc.) correctamente.
+func TestSiatCompraVentaService_VerificacionEstadoFactura(t *testing.T) {
+	godotenv.Load(".env")
+
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
+
+	client := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), client)
+	serviceCodigos := siatClient.Codigos()
+	serviceCompraVenta := siatClient.CompraVenta()
+
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, _ := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
+
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, _ := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
+
+	req := models.CompraVenta().NewVerificacionEstadoFacturaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoDocumentoSector(1).
+		WithCodigoEmision(1).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoPuntoVenta(0).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithNit(nit).
+		WithTipoFacturaDocumento(1).
+		WithCuf("D5340CCDF031F0CFDBF...").
+		Build()
+
+	resp, err := serviceCompraVenta.VerificacionEstadoFactura(context.Background(), config, req)
+
+	if assert.NoError(t, err) && assert.NotNil(t, resp) {
+		log.Printf("Respuesta Verificacion Estado: %+v", resp.Body.Content)
+	}
+}
+
+// TestSiatCompraVentaService_VerificarComunicacion valida la conectividad básica con el
+// Servicio de Facturación Compra Venta del SIAT.
+func TestSiatCompraVentaService_VerificarComunicacion(t *testing.T) {
+	godotenv.Load(".env")
+	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
+
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	service := siatClient.CompraVenta()
+
+	req := models.CompraVenta().NewVerificarComunicacionBuilder().Build()
+	resp, err := service.VerificarComunicacion(context.Background(), config, req)
+
+	if assert.NoError(t, err) && assert.NotNil(t, resp) {
+		assert.True(t, resp.Body.Content.Return.Transaccion)
+		log.Printf("Respuesta Comunicacion: %+v", resp.Body.Content)
+	}
+}
+
+// TestSiatCompraVentaService_RecepcionMasivaFactura prueba el flujo de envío de múltiples facturas
+// bajo la modalidad de emisión masiva. Asegura que el CUF generado sea consistente con el tipo de emisión.
+func TestSiatCompraVentaService_RecepcionMasivaFactura(t *testing.T) {
+	godotenv.Load(".env")
+
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
+
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	serviceCodigos := siatClient.Codigos()
+	serviceCompraVenta := siatClient.CompraVenta()
+
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, _ := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
+
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, _ := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
+
+	// Construir paquete de 5 facturas para recepción masiva
+	var tarBuf bytes.Buffer
+	tw := tar.NewWriter(&tarBuf)
+	fechaEmision := time.Now()
+	for i := 1; i <= 5; i++ {
+		// Para masiva debe ser emisión Masiva (3)
+		cuf, _ := utils.GenerarCUF(nit, fechaEmision, 0, codModalidad, facturas.EmisionMasiva, 1, 1, i, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
+		log.Printf("CUF #%d: %s", i, cuf)
+		cabecera := facturas.NewFacturaCompraVentaCabeceraBuilder().
+			WithNitEmisor(nit).
+			WithRazonSocialEmisor("Ronaldo Rua").
+			WithMunicipio("Tarija").
+			WithNumeroFactura(int64(i)).
+			WithCuf(cuf).
+			WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+			WithCodigoSucursal(0).
+			WithDireccion("ESQUINA AVENIDA LA PAZ").
+			WithCodigoPuntoVenta(0).
+			WithFechaEmision(fechaEmision).
+			WithNombreRazonSocial("JUAN PEREZ").
+			WithCodigoTipoDocumentoIdentidad(1).
+			WithNumeroDocumento("5115889").
+			WithCodigoCliente(strconv.Itoa(i)).
+			WithCodigoMetodoPago(1).
+			WithMontoTotal(100).
+			WithMontoTotalSujetoIva(100).
+			WithCodigoMoneda(1).
+			WithTipoCambio(1).
+			WithMontoTotalMoneda(100).
+			WithLeyenda("Ley N° 453: Tienes derecho a recibir información...").
+			WithUsuario("usuario").
+			WithCodigoDocumentoSector(1).
+			Build()
+
+		detalle := facturas.NewFacturaCompraVentaDetalleBuilder().
+			WithActividadEconomica("477300").
+			WithCodigoProductoSin("622539").
+			WithCodigoProducto("abc123").
+			WithDescripcion("GASA").
+			WithCantidad(1).
+			WithUnidadMedida(1).
+			WithPrecioUnitario(100).
+			WithSubTotal(100).
+			Build()
+
+		factura := facturas.NewFacturaCompraVentaBuilder().
+			WithModalidad(facturas.ModalidadElectronica).
+			WithCabecera(cabecera).
+			AddDetalle(detalle).
+			Build()
+
+		xmlData, _ := xml.Marshal(factura)
+		signedXML, _ := utils.SignXML(xmlData, "key.pem", "cert.crt")
+
+		hdr := &tar.Header{
+			Name: fmt.Sprintf("factura_%d.xml", i),
+			Mode: 0600,
+			Size: int64(len(signedXML)),
+		}
+		tw.WriteHeader(hdr)
+		tw.Write(signedXML)
+	}
+	tw.Close()
+
+	// Comprimir el TAR con Gzip
+	var gzipBuf bytes.Buffer
+	gw := gzip.NewWriter(&gzipBuf)
+	gw.Write(tarBuf.Bytes())
+	gw.Close()
+
+	compressedBytes := gzipBuf.Bytes()
+	hash := sha256.Sum256(compressedBytes)
+	hashString := hex.EncodeToString(hash[:])
+	encodedArchivo := base64.StdEncoding.EncodeToString(compressedBytes)
+
+	req := models.CompraVenta().NewRecepcionMasivaFacturaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoDocumentoSector(1).
+		WithCodigoEmision(facturas.EmisionMasiva).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoPuntoVenta(0).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithNit(nit).
+		WithTipoFacturaDocumento(1).
+		WithArchivo(encodedArchivo).
+		WithFechaEnvio(fechaEmision).
+		WithHashArchivo(hashString).
+		WithCantidadFacturas(5).
+		Build()
+
+	resp, err := serviceCompraVenta.RecepcionMasivaFactura(context.Background(), config, req)
+
+	if assert.NoError(t, err) && assert.NotNil(t, resp) {
+		log.Printf("Respuesta Recepcion Masiva: %+v", resp.Body.Content)
+	}
+}
+
+// TestSiatCompraVentaService_ValidacionRecepcionMasivaFactura verifica el estado de procesamiento
+// de un paquete de facturas enviado previamente mediante RecepcionMasivaFactura.
+func TestSiatCompraVentaService_ValidacionRecepcionMasivaFactura(t *testing.T) {
+	godotenv.Load(".env")
+
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
+
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	serviceCodigos := siatClient.Codigos()
+	serviceCompraVenta := siatClient.CompraVenta()
+
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, _ := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
+
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, _ := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
+
+	req := models.CompraVenta().NewValidacionRecepcionMasivaFacturaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoDocumentoSector(1).
+		WithCodigoEmision(facturas.EmisionMasiva).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoPuntoVenta(0).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithNit(nit).
+		WithTipoFacturaDocumento(1).
+		WithCodigoRecepcion("755d4aab-1ce6-11f1-8c52-99bc8e8492c6").
+		Build()
+
+	resp, err := serviceCompraVenta.ValidacionRecepcionMasivaFactura(context.Background(), config, req)
+
+	if assert.NoError(t, err) && assert.NotNil(t, resp) {
+		log.Printf("Respuesta Validacion Masiva: %+v", resp.Body.Content)
+	}
+}
+
+// TestSiatCompraVentaService_RecepcionPaqueteFactura implementa una prueba compleja de empaquetado.
+// Genera 5 facturas en memoria, las firma, crea un archivo TAR.GZ en un buffer (sin archivos físicos)
+// y lo envía al SIAT codificado en Base64 para su validación.
+func TestSiatCompraVentaService_RecepcionPaqueteFactura(t *testing.T) {
+	godotenv.Load(".env")
+
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
+
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	serviceCodigos := siatClient.Codigos()
+	serviceCompraVenta := siatClient.CompraVenta()
+
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, _ := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
+
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, _ := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
+
+	// Construir paquete de 5 facturas
+	var tarBuf bytes.Buffer
+	tw := tar.NewWriter(&tarBuf)
+
+	for i := 1; i <= 5; i++ {
+		fechaEmision := time.Now()
+		cuf, _ := utils.GenerarCUF(nit, fechaEmision, 0, codModalidad, facturas.EmisionOffline, 1, 1, i, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
+
+		cabecera := facturas.NewFacturaCompraVentaCabeceraBuilder().
+			WithNitEmisor(nit).
+			WithRazonSocialEmisor("Ronaldo Rua").
+			WithMunicipio("Tarija").
+			WithNumeroFactura(int64(i)).
+			WithCuf(cuf).
+			WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+			WithCodigoSucursal(0).
+			WithDireccion("ESQUINA AVENIDA LA PAZ").
+			WithCodigoPuntoVenta(0).
+			WithFechaEmision(fechaEmision).
+			WithNombreRazonSocial("JUAN PEREZ").
+			WithCodigoTipoDocumentoIdentidad(1).
+			WithNumeroDocumento("5115889").
+			WithCodigoCliente(strconv.Itoa(i)).
+			WithCodigoMetodoPago(1).
+			WithMontoTotal(100).
+			WithMontoTotalSujetoIva(100).
+			WithCodigoMoneda(1).
+			WithTipoCambio(1).
+			WithMontoTotalMoneda(100).
+			WithLeyenda("Ley N° 453: Tienes derecho a recibir información...").
+			WithUsuario("usuario").
+			WithCodigoDocumentoSector(1).
+			Build()
+
+		detalle := facturas.NewFacturaCompraVentaDetalleBuilder().
+			WithActividadEconomica("477300").
+			WithCodigoProductoSin("622539").
+			WithCodigoProducto("abc123").
+			WithDescripcion("GASA").
+			WithCantidad(1).
+			WithUnidadMedida(1).
+			WithPrecioUnitario(100).
+			WithSubTotal(100).
+			Build()
+
+		factura := facturas.NewFacturaCompraVentaBuilder().
+			WithModalidad(facturas.ModalidadElectronica).
+			WithCabecera(cabecera).
+			AddDetalle(detalle).
+			Build()
+
+		xmlData, _ := xml.Marshal(factura)
+		signedXML, _ := utils.SignXML(xmlData, "key.pem", "cert.crt")
+
+		hdr := &tar.Header{
+			Name: fmt.Sprintf("factura_%d.xml", i),
+			Mode: 0600,
+			Size: int64(len(signedXML)),
+		}
+		if err := tw.WriteHeader(hdr); err != nil {
+			t.Fatalf("error escribiendo header tar: %v", err)
+		}
+		if _, err := tw.Write(signedXML); err != nil {
+			t.Fatalf("error escribiendo archivo en tar: %v", err)
+		}
+	}
+	tw.Close()
+
+	// Comprimir el TAR con Gzip
+	var gzipBuf bytes.Buffer
+	gw := gzip.NewWriter(&gzipBuf)
+	if _, err := gw.Write(tarBuf.Bytes()); err != nil {
+		t.Fatalf("error comprimiendo tar: %v", err)
+	}
+	gw.Close()
+
+	compressedBytes := gzipBuf.Bytes()
+	hash := sha256.Sum256(compressedBytes)
+	hashString := hex.EncodeToString(hash[:])
+	encodedArchivo := base64.StdEncoding.EncodeToString(compressedBytes)
+
+	req := models.CompraVenta().NewRecepcionPaqueteFacturaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoDocumentoSector(1).
+		WithCodigoEmision(facturas.EmisionOffline).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoPuntoVenta(0).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithNit(nit).
+		WithTipoFacturaDocumento(1).
+		WithArchivo(encodedArchivo).
+		WithFechaEnvio(time.Now()).
+		WithHashArchivo(hashString).
+		WithCantidadFacturas(5).
+		WithCodigoEvento(9578213).
+		Build()
+
+	resp, err := serviceCompraVenta.RecepcionPaqueteFactura(context.Background(), config, req)
+
+	if assert.NoError(t, err) && assert.NotNil(t, resp) {
+		log.Printf("Respuesta Recepcion Paquete: %+v", resp.Body.Content)
+	}
+}
+
+// TestSiatCompraVentaService_ValidacionRecepcionPaqueteFactura consulta el resultado de la validación
+// de un paquete de facturas (TAR.GZ) enviado al SIAT.
+func TestSiatCompraVentaService_ValidacionRecepcionPaqueteFactura(t *testing.T) {
+	godotenv.Load(".env")
+
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
+
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
+	serviceCodigos := siatClient.Codigos()
+	serviceCompraVenta := siatClient.CompraVenta()
+
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, _ := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
+
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, _ := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
+
+	req := models.CompraVenta().NewValidacionRecepcionPaqueteFacturaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoDocumentoSector(1).
+		WithCodigoEmision(facturas.EmisionOffline).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoPuntoVenta(0).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithNit(nit).
+		WithTipoFacturaDocumento(1).
+		WithCodigoRecepcion("b4af3130-1ce3-11f1-8c52-99bc8e8492c6").
+		Build()
+
+	resp, err := serviceCompraVenta.ValidacionRecepcionPaqueteFactura(context.Background(), config, req)
+
+	if assert.NoError(t, err) && assert.NotNil(t, resp) {
+		log.Printf("Respuesta Validacion Paquete: %+v", resp.Body.Content)
+	}
+}
+
+func TestSiatCompraVentaService_ReversionAnulacionFactura(t *testing.T) {
+	godotenv.Load(".env")
+
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
+
+	client := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), client)
+	serviceCodigos := siatClient.Codigos()
+	serviceCompraVenta := siatClient.CompraVenta()
+
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, err := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
 	if err != nil {
 		t.Fatalf("error CUIS: %v", err)
 	}
 
-	cufd, err := serviceCodigos.SolicitudCufd(context.Background(), config, &codigos.Cufd{
-		SolicitudCufd: codigos.SolicitudCufd{
-			CodigoAmbiente: codAmbiente, CodigoModalidad: codModalidad,
-			CodigoSistema: os.Getenv("SIAT_CODIGO_SISTEMA"), Nit: nit,
-			Cuis: cuis.Body.Content.RespuestaCuis.Codigo,
-		},
-	})
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, err := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
 	if err != nil {
 		t.Fatalf("error CUFD: %v", err)
 	}
 
-	serviceCompraVenta, _ := service.NewSiatCompraVentaService(os.Getenv("SIAT_URL"), client)
+	cuf := "ABCD1234"
+	resp, err := serviceCompraVenta.ReversionAnulacionFactura(context.Background(), config, models.CompraVenta().
+		NewReversionAnulacionFacturaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoPuntoVenta(0).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithNit(nit).
+		WithCodigoDocumentoSector(1).
+		WithCodigoEmision(1).
+		WithCodigoModalidad(codModalidad).
+		WithCuf(cuf).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithTipoFacturaDocumento(1).
+		Build())
+
+	if err != nil {
+		t.Fatalf("error en solicitud: %v", err)
+	}
+
+	assert.NotNil(t, resp)
+	log.Printf("Respuesta SIAT: %+v", resp.Body.Content)
+}
+
+// TestSiatCompraVentaService_RecepcionFactura valida el flujo técnico de emisión de una factura individual.
+// Proceso: Construcción -> Firmado XML -> Compresión Gzip -> Codificación Base64 -> Envío SOAP.
+func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
+	godotenv.Load(".env")
+
+	codModalidad, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_MODALIDAD"))
+	nit, _ := utils.ParseInt64Safe(os.Getenv("SIAT_NIT"))
+	codAmbiente, _ := utils.ParseIntSafe(os.Getenv("SIAT_CODIGO_AMBIENTE"))
+	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
+
+	client := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), client)
+	serviceCodigos := siatClient.Codigos()
+
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, err := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
+	if err != nil {
+		t.Fatalf("error CUIS: %v", err)
+	}
+
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, err := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
+	if err != nil {
+		t.Fatalf("error CUFD: %v", err)
+	}
+
+	serviceCompraVenta := siatClient.CompraVenta()
 
 	fechaEmision := time.Now()
 	// 1. Generar CUF
@@ -67,41 +643,49 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 		t.Fatalf("error al generar CUF: %v", err)
 	}
 
-	// Crear objeto de factura
-	factura := compra_venta.FacturaCompraVenta{
-		XMLName:           xml.Name{Local: "facturaElectronicaCompraVenta"},
-		XmlnsXsi:          "http://www.w3.org/2001/XMLSchema-instance",
-		XsiSchemaLocation: "facturaElectronicaCompraVenta.xsd",
-		Cabecera: compra_venta.Cabecera{
-			NitEmisor:                    nit,
-			RazonSocialEmisor:            "Ronaldo Rua",
-			Municipio:                    "Tarija",
-			NumeroFactura:                1,
-			Cuf:                          cuf,
-			Cufd:                         cufd.Body.Content.RespuestaCufd.Codigo,
-			CodigoSucursal:               0,
-			Direccion:                    "ESQUINA AVENIDA LA PAZ",
-			CodigoPuntoVenta:             0,
-			FechaEmision:                 fechaEmision.Format("2006-01-02T15:04:05.000"), // Formato SIAT preciso
-			NombreRazonSocial:            compra_venta.Nilable[string]{Value: new("JUAN PEREZ")},
-			CodigoTipoDocumentoIdentidad: 1,
-			NumeroDocumento:              "5115889",
-			CodigoCliente:                "1",
-			CodigoMetodoPago:             1,
-			MontoTotal:                   100,
-			MontoTotalSujetoIva:          100,
-			CodigoMoneda:                 1,
-			TipoCambio:                   1,
-			MontoTotalMoneda:             100,
-			Leyenda:                      "Ley N° 453: Tienes derecho a recibir información...",
-			Usuario:                      "usuario",
-			CodigoDocumentoSector:        1,
-		},
-		Detalle: []compra_venta.Detalle{{
-			ActividadEconomica: "477300", CodigoProductoSin: "622539", CodigoProducto: "abc123",
-			Descripcion: "GASA", Cantidad: 1, UnidadMedida: 1, PrecioUnitario: 100, SubTotal: 100,
-		}},
-	}
+	// Crear objeto de factura usando el nuevo paquete facturas
+	cabecera := facturas.NewFacturaCompraVentaCabeceraBuilder().
+		WithNitEmisor(nit).
+		WithRazonSocialEmisor("Ronaldo Rua").
+		WithMunicipio("Tarija").
+		WithNumeroFactura(1).
+		WithCuf(cuf).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCodigoSucursal(0).
+		WithDireccion("ESQUINA AVENIDA LA PAZ").
+		WithCodigoPuntoVenta(0).
+		WithFechaEmision(fechaEmision).
+		WithNombreRazonSocial("JUAN PEREZ").
+		WithCodigoTipoDocumentoIdentidad(1).
+		WithNumeroDocumento("5115889").
+		WithCodigoCliente("1").
+		WithCodigoMetodoPago(1).
+		WithMontoTotal(100).
+		WithMontoTotalSujetoIva(100).
+		WithCodigoMoneda(1).
+		WithTipoCambio(1).
+		WithMontoTotalMoneda(100).
+		WithLeyenda("Ley N° 453: Tienes derecho a recibir información...").
+		WithUsuario("usuario").
+		WithCodigoDocumentoSector(1).
+		Build()
+
+	detalle := facturas.NewFacturaCompraVentaDetalleBuilder().
+		WithActividadEconomica("477300").
+		WithCodigoProductoSin("622539").
+		WithCodigoProducto("abc123").
+		WithDescripcion("GASA").
+		WithCantidad(1).
+		WithUnidadMedida(1).
+		WithPrecioUnitario(100).
+		WithSubTotal(100).
+		Build()
+
+	factura := facturas.NewFacturaCompraVentaBuilder().
+		WithModalidad(facturas.ModalidadElectronica).
+		WithCabecera(cabecera).
+		AddDetalle(detalle).
+		Build()
 
 	// 2. Serializar y Firmar
 	xmlData, _ := xml.Marshal(factura)
@@ -124,23 +708,25 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 	hash := sha256.Sum256(compressedBytes)
 	hashString := hex.EncodeToString(hash[:])
 
-	// 5. CODIFICAR A BASE64
+	// 5. Codificar a base64
 	encodedArchivo := base64.StdEncoding.EncodeToString(compressedBytes)
 
-	req := &compra_venta.RecepcionFactura{
-		SolicitudServicioRecepcionFactura: compra_venta.SolicitudRecepcionFactura{
-			SolicitudRecepcion: compra_venta.SolicitudRecepcion{
-				CodigoAmbiente: codAmbiente, CodigoModalidad: codModalidad,
-				CodigoSistema: os.Getenv("SIAT_CODIGO_SISTEMA"), Nit: nit,
-				CodigoSucursal: 0, CodigoDocumentoSector: 1, CodigoEmision: 1,
-				CodigoPuntoVenta: 0, Cufd: cufd.Body.Content.RespuestaCufd.Codigo,
-				Cuis: cuis.Body.Content.RespuestaCuis.Codigo, TipoFacturaDocumento: 1,
-			},
-			Archivo:     encodedArchivo, // Se envía la cadena base64 como slice de bytes
-			FechaEnvio:  datatype.NewTimeSiat(fechaEmision),
-			HashArchivo: hashString,
-		},
-	}
+	req := models.CompraVenta().NewRecepcionFacturaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCodigoSucursal(0).
+		WithCodigoDocumentoSector(1).
+		WithCodigoEmision(1).
+		WithCodigoPuntoVenta(0).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		WithTipoFacturaDocumento(1).
+		WithArchivo(encodedArchivo).
+		WithFechaEnvio(fechaEmision).
+		WithHashArchivo(hashString).
+		Build()
 
 	resp, err := serviceCompraVenta.RecepcionFactura(context.Background(), config, req)
 	if err != nil {
@@ -151,6 +737,10 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 	log.Printf("Respuesta SIAT: %+v", resp.Body.Content)
 }
 
+// TestSiatCompraVentaService_AnulacionFactura valida el proceso de anulación de una factura emitida.
+// Se debe especificar un código de motivo de anulación válido según la paramétrica del SIAT.
+// TestSiatCompraVentaService_AnulacionFactura prueba el flujo de anulación de una factura
+// proporcionando el motivo de anulación y el CUF correspondiente.
 func TestSiatCompraVentaService_AnulacionFactura(t *testing.T) {
 	godotenv.Load(".env")
 
@@ -160,56 +750,51 @@ func TestSiatCompraVentaService_AnulacionFactura(t *testing.T) {
 	config := config.Config{Token: os.Getenv("SIAT_TOKEN")}
 
 	client := &http.Client{Transport: &http.Transport{Proxy: http.ProxyFromEnvironment}}
-	serviceCodigos, _ := service.NewSiatCodigosService(os.Getenv("SIAT_URL"), client)
+	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), client)
+	serviceCodigos := siatClient.Codigos()
+	serviceCompraVenta := siatClient.CompraVenta()
 
 	// Solicitar CUIS y CUFD
-	cuis, err := serviceCodigos.SolicitudCuis(context.Background(), config, &codigos.Cuis{
-		SolicitudCuis: codigos.SolicitudCuis{
-			CodigoAmbiente: codAmbiente, CodigoModalidad: codModalidad,
-			CodigoSistema: os.Getenv("SIAT_CODIGO_SISTEMA"), Nit: nit,
-		},
-	})
+	cuisReq := models.Codigos().NewCuisBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		Build()
+
+	cuis, err := serviceCodigos.SolicitudCuis(context.Background(), config, cuisReq)
 	if err != nil {
 		t.Fatalf("error CUIS: %v", err)
 	}
 
-	cufd, err := serviceCodigos.SolicitudCufd(context.Background(), config, &codigos.Cufd{
-		SolicitudCufd: codigos.SolicitudCufd{
-			CodigoAmbiente: codAmbiente, CodigoModalidad: codModalidad,
-			CodigoSistema: os.Getenv("SIAT_CODIGO_SISTEMA"), Nit: nit,
-			Cuis: cuis.Body.Content.RespuestaCuis.Codigo,
-		},
-	})
+	cufdReq := models.Codigos().NewCufdBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithNit(nit).
+		WithCuis(cuis.Body.Content.RespuestaCuis.Codigo).
+		Build()
+
+	cufd, err := serviceCodigos.SolicitudCufd(context.Background(), config, cufdReq)
 	if err != nil {
 		t.Fatalf("error CUFD: %v", err)
 	}
 
-	serviceCompraVenta, _ := service.NewSiatCompraVentaService(os.Getenv("SIAT_URL"), client)
-
-	fechaEmision := time.Now()
 	// Generar CUF de la factura que supuestamente vamos a anular
-	cuf, err := utils.GenerarCUF(nit, fechaEmision, 0, codModalidad, 1, 1, 1, 1, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
-	if err != nil {
-		t.Fatalf("error al generar CUF: %v", err)
-	}
-
-	// Usar la estructura directamente sin Builder
-	req := &compra_venta.AnulacionFactura{
-		SolicitudAnulacion: compra_venta.SolicitudAnulacion{
-			SolicitudRecepcion: compra_venta.SolicitudRecepcion{
-				CodigoAmbiente:        codAmbiente,
-				CodigoDocumentoSector: 1,
-				CodigoEmision:         1,
-				CodigoModalidad:       codModalidad,
-				CodigoPuntoVenta:      0,
-				CodigoSistema:         os.Getenv("SIAT_CODIGO_SISTEMA"),
-				CodigoSucursal:        0,
-				Cufd:                  cufd.Body.Content.RespuestaCufd.Codigo,
-			},
-			Cuf:          cuf,
-			CodigoMotivo: 1,
-		},
-	}
+	cuf := "ABCD1234"
+	// Usar el Builder en lugar de instanciar directamente
+	req := models.CompraVenta().NewAnulacionFacturaBuilder().
+		WithCodigoAmbiente(codAmbiente).
+		WithCodigoDocumentoSector(1).
+		WithCodigoEmision(1).
+		WithCodigoModalidad(codModalidad).
+		WithCodigoPuntoVenta(0).
+		WithCodigoSistema(os.Getenv("SIAT_CODIGO_SISTEMA")).
+		WithCodigoSucursal(0).
+		WithCufd(cufd.Body.Content.RespuestaCufd.Codigo).
+		WithCuf(cuf).
+		WithCodigoMotivo(1).
+		Build()
 
 	resp, err := serviceCompraVenta.AnulacionFactura(context.Background(), config, req)
 	if err != nil {

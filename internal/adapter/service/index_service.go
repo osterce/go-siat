@@ -3,6 +3,7 @@ package service
 import (
 	"encoding/xml"
 	"fmt"
+	"log"
 
 	"io"
 	"net/http"
@@ -52,6 +53,7 @@ func parseSoapResponse[T any](resp *http.Response) (*soap.EnvelopeResponse[T], e
 	if err != nil {
 		return nil, fmt.Errorf("error al leer el cuerpo de la respuesta: %w", err)
 	}
+	log.Printf("Raw Response Body: %s", string(body))
 
 	var result soap.EnvelopeResponse[T]
 
