@@ -8,34 +8,37 @@ import (
 
 type operacionesNamespace struct{}
 
-// Operaciones expone constructores de solicitudes para el módulo de Operaciones del SIAT.
-var Operaciones = operacionesNamespace{}
+func Operaciones() operacionesNamespace {
+	return operacionesNamespace{}
+}
 
 // --- Interfaces opacas para las solicitudes de Operaciones ---
 
-// RegistroPuntoVentaRequest representa una solicitud para registrar un nuevo punto de venta.
-type RegistroPuntoVentaRequest interface{ commonRequest() }
+type VerificarComunicacionOperaciones interface{}
 
-// ConsultaPuntoVentaRequest representa una solicitud para listar puntos de venta registrados.
-type ConsultaPuntoVentaRequest interface{ commonRequest() }
+// RegistroPuntoVenta representa una solicitud para registrar un nuevo punto de venta.
+type RegistroPuntoVenta interface{}
 
-// CierrePuntoVentaRequest representa una solicitud para cerrar un punto de venta.
-type CierrePuntoVentaRequest interface{ commonRequest() }
+// ConsultaPuntoVenta representa una solicitud para listar puntos de venta registrados.
+type ConsultaPuntoVenta interface{}
 
-// RegistroPuntoVentaComisionistaRequest representa una solicitud para registrar un comisionista.
-type RegistroPuntoVentaComisionistaRequest interface{ commonRequest() }
+// CierrePuntoVenta representa una solicitud para cerrar un punto de venta.
+type CierrePuntoVenta interface{}
 
-// CierreOperacionesSistemaRequest representa una solicitud para el cierre del sistema.
-type CierreOperacionesSistemaRequest interface{ commonRequest() }
+// RegistroPuntoVentaComisionista representa una solicitud para registrar un comisionista.
+type RegistroPuntoVentaComisionista interface{}
 
-// ConsultaEventoSignificativoRequest representa una solicitud para consultar eventos registrados.
-type ConsultaEventoSignificativoRequest interface{ commonRequest() }
+// CierreOperacionesSistema representa una solicitud para el cierre del sistema.
+type CierreOperacionesSistema interface{}
 
-// RegistroEventoSignificativoRequest representa una solicitud para informar un evento significativo.
-type RegistroEventoSignificativoRequest interface{ commonRequest() }
+// ConsultaEventoSignificativo representa una solicitud para consultar eventos registrados.
+type ConsultaEventoSignificativo interface{}
 
-// NewRegistroPuntoVentaRequest inicia la construcción de una solicitud para registrar un nuevo punto de venta.
-func (operacionesNamespace) NewRegistroPuntoVentaRequest() *RegistroPuntoVentaBuilder {
+// RegistroEventoSignificativo representa una solicitud para informar un evento significativo.
+type RegistroEventoSignificativo interface{}
+
+// NewRegistroPuntoVentaBuilder inicializa un builder para registrar un nuevo punto de venta.
+func (operacionesNamespace) NewRegistroPuntoVentaBuilder() *RegistroPuntoVentaBuilder {
 	return &RegistroPuntoVentaBuilder{
 		request: &operaciones.RegistroPuntoVenta{},
 	}
@@ -92,12 +95,12 @@ func (b *RegistroPuntoVentaBuilder) WithNombrePuntoVenta(nombrePuntoVenta string
 }
 
 // Build retorna el objeto RegistroPuntoVenta configurado.
-func (b *RegistroPuntoVentaBuilder) Build() RegistroPuntoVentaRequest {
+func (b *RegistroPuntoVentaBuilder) Build() RegistroPuntoVenta {
 	return requestWrapper[operaciones.RegistroPuntoVenta]{request: b.request}
 }
 
-// NewConsultaPuntoVentaRequest inicia la construcción de una solicitud para consultar puntos de venta.
-func (operacionesNamespace) NewConsultaPuntoVentaRequest() *ConsultaPuntoVentaBuilder {
+// NewConsultaPuntoVentaBuilder inicializa un builder para la consulta de puntos de venta.
+func (operacionesNamespace) NewConsultaPuntoVentaBuilder() *ConsultaPuntoVentaBuilder {
 	return &ConsultaPuntoVentaBuilder{
 		request: &operaciones.ConsultaPuntoVenta{},
 	}
@@ -134,12 +137,12 @@ func (b *ConsultaPuntoVentaBuilder) WithNit(nit int64) *ConsultaPuntoVentaBuilde
 }
 
 // Build retorna el objeto ConsultaPuntoVenta configurado.
-func (b *ConsultaPuntoVentaBuilder) Build() ConsultaPuntoVentaRequest {
+func (b *ConsultaPuntoVentaBuilder) Build() ConsultaPuntoVenta {
 	return requestWrapper[operaciones.ConsultaPuntoVenta]{request: b.request}
 }
 
-// NewCierrePuntoVentaRequest inicia la construcción de una solicitud para cerrar un punto de venta.
-func (operacionesNamespace) NewCierrePuntoVentaRequest() *CierrePuntoVentaBuilder {
+// NewCierrePuntoVentaBuilder inicializa un builder para cerrar un punto de venta.
+func (operacionesNamespace) NewCierrePuntoVentaBuilder() *CierrePuntoVentaBuilder {
 	return &CierrePuntoVentaBuilder{
 		request: &operaciones.CierrePuntoVenta{},
 	}
@@ -181,12 +184,12 @@ func (b *CierrePuntoVentaBuilder) WithNit(nit int64) *CierrePuntoVentaBuilder {
 }
 
 // Build retorna el objeto CierrePuntoVenta configurado.
-func (b *CierrePuntoVentaBuilder) Build() CierrePuntoVentaRequest {
+func (b *CierrePuntoVentaBuilder) Build() CierrePuntoVenta {
 	return requestWrapper[operaciones.CierrePuntoVenta]{request: b.request}
 }
 
-// NewRegistroPuntoVentaComisionistaRequest inicia la construcción de una solicitud para un comisionista.
-func (operacionesNamespace) NewRegistroPuntoVentaComisionistaRequest() *RegistroPuntoVentaComisionistaBuilder {
+// NewRegistroPuntoVentaComisionistaBuilder inicializa un builder para registrar un comisionista en un punto de venta.
+func (operacionesNamespace) NewRegistroPuntoVentaComisionistaBuilder() *RegistroPuntoVentaComisionistaBuilder {
 	return &RegistroPuntoVentaComisionistaBuilder{
 		request: &operaciones.RegistroPuntoVentaComisionista{},
 	}
@@ -258,12 +261,12 @@ func (b *RegistroPuntoVentaComisionistaBuilder) WithFechaFin(fechaFin time.Time)
 }
 
 // Build retorna el objeto RegistroPuntoVentaComisionista configurado.
-func (b *RegistroPuntoVentaComisionistaBuilder) Build() RegistroPuntoVentaComisionistaRequest {
+func (b *RegistroPuntoVentaComisionistaBuilder) Build() RegistroPuntoVentaComisionista {
 	return requestWrapper[operaciones.RegistroPuntoVentaComisionista]{request: b.request}
 }
 
-// NewCierreOperacionesSistemaRequest inicia la construcción de una solicitud para cerrar operaciones del sistema.
-func (operacionesNamespace) NewCierreOperacionesSistemaRequest() *CierreOperacionesSistemaBuilder {
+// NewCierreOperacionesSistemaBuilder inicializa la configuración base para el cierre de operaciones.
+func (operacionesNamespace) NewCierreOperacionesSistemaBuilder() *CierreOperacionesSistemaBuilder {
 	return &CierreOperacionesSistemaBuilder{
 		request: &operaciones.CierreOperacionesSistema{},
 	}
@@ -310,10 +313,148 @@ func (b *CierreOperacionesSistemaBuilder) WithNit(nit int64) *CierreOperacionesS
 }
 
 // Build retorna el objeto CierreOperacionesSistema configurado.
-func (b *CierreOperacionesSistemaBuilder) Build() CierreOperacionesSistemaRequest {
+func (b *CierreOperacionesSistemaBuilder) Build() CierreOperacionesSistema {
 	return requestWrapper[operaciones.CierreOperacionesSistema]{request: b.request}
 }
 
-func (operacionesNamespace) NewVerificiarComunicacionOperaciones() *operaciones.VerificarComunicacion {
-	return &operaciones.VerificarComunicacion{}
+func (operacionesNamespace) NewVerificarComunicacionBuilder() *VerificarComunicacionOperacionesBuilder {
+	return &VerificarComunicacionOperacionesBuilder{
+		request: &operaciones.VerificarComunicacion{},
+	}
+}
+
+// RegistroEventoSignificativoBuilder ayuda a configurar el registro de un evento significativo.
+type VerificarComunicacionOperacionesBuilder struct {
+	request *operaciones.VerificarComunicacion
+}
+
+func (b *VerificarComunicacionOperacionesBuilder) Build() VerificarComunicacionOperaciones {
+	return requestWrapper[operaciones.VerificarComunicacion]{request: b.request}
+}
+
+// NewRegistroEventoSignificativoBuilder inicializa un builder para registrar un evento significativo.
+func (operacionesNamespace) NewRegistroEventoSignificativoBuilder() *RegistroEventoSignificativoBuilder {
+	return &RegistroEventoSignificativoBuilder{
+		request: &operaciones.RegistroEventoSignificativo{},
+	}
+}
+
+// RegistroEventoSignificativoBuilder ayuda a configurar el registro de un evento significativo.
+type RegistroEventoSignificativoBuilder struct {
+	request *operaciones.RegistroEventoSignificativo
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithCodigoAmbiente(codigoAmbiente int) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.CodigoAmbiente = codigoAmbiente
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithCodigoMotivoEvento(codigoMotivoEvento int) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.CodigoMotivoEvento = codigoMotivoEvento
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.CodigoPuntoVenta = codigoPuntoVenta
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithCodigoSistema(codigoSistema string) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.CodigoSistema = codigoSistema
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithCodigoSucursal(codigoSucursal int) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.CodigoSucursal = codigoSucursal
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithCuis(cuis string) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.Cuis = cuis
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithCufdEvento(cufdEvento string) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.CufdEvento = cufdEvento
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithCufd(cufd string) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.Cufd = cufd
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithDescripcion(descripcion string) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.Descripcion = descripcion
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithFechaHoraInicioEvento(fecha time.Time) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.FechaHoraInicioEvento = fecha
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithFechaHoraFinEvento(fecha time.Time) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.FechaHoraFinEvento = fecha
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) WithNit(nit int64) *RegistroEventoSignificativoBuilder {
+	b.request.SolicitudEventoSignificativo.Nit = nit
+	return b
+}
+
+func (b *RegistroEventoSignificativoBuilder) Build() RegistroEventoSignificativo {
+	return requestWrapper[operaciones.RegistroEventoSignificativo]{request: b.request}
+}
+
+// NewConsultaEventoSignificativoBuilder inicializa un builder para consultar eventos significativos.
+func (operacionesNamespace) NewConsultaEventoSignificativoBuilder() *ConsultaEventoSignificativoBuilder {
+	return &ConsultaEventoSignificativoBuilder{
+		request: &operaciones.ConsultaEventoSignificativo{},
+	}
+}
+
+// ConsultaEventoSignificativoBuilder ayuda a configurar la consulta de eventos significativos.
+type ConsultaEventoSignificativoBuilder struct {
+	request *operaciones.ConsultaEventoSignificativo
+}
+
+func (b *ConsultaEventoSignificativoBuilder) WithCodigoAmbiente(codigoAmbiente int) *ConsultaEventoSignificativoBuilder {
+	b.request.SolicitudConsultaEvento.CodigoAmbiente = codigoAmbiente
+	return b
+}
+
+func (b *ConsultaEventoSignificativoBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *ConsultaEventoSignificativoBuilder {
+	b.request.SolicitudConsultaEvento.CodigoPuntoVenta = codigoPuntoVenta
+	return b
+}
+
+func (b *ConsultaEventoSignificativoBuilder) WithCodigoSistema(codigoSistema string) *ConsultaEventoSignificativoBuilder {
+	b.request.SolicitudConsultaEvento.CodigoSistema = codigoSistema
+	return b
+}
+
+func (b *ConsultaEventoSignificativoBuilder) WithCodigoSucursal(codigoSucursal int) *ConsultaEventoSignificativoBuilder {
+	b.request.SolicitudConsultaEvento.CodigoSucursal = codigoSucursal
+	return b
+}
+
+func (b *ConsultaEventoSignificativoBuilder) WithCuis(cuis string) *ConsultaEventoSignificativoBuilder {
+	b.request.SolicitudConsultaEvento.Cuis = cuis
+	return b
+}
+
+func (b *ConsultaEventoSignificativoBuilder) WithFechaEvento(fecha time.Time) *ConsultaEventoSignificativoBuilder {
+	b.request.SolicitudConsultaEvento.FechaEvento = fecha
+	return b
+}
+
+func (b *ConsultaEventoSignificativoBuilder) WithNit(nit int64) *ConsultaEventoSignificativoBuilder {
+	b.request.SolicitudConsultaEvento.Nit = nit
+	return b
+}
+
+func (b *ConsultaEventoSignificativoBuilder) Build() ConsultaEventoSignificativo {
+	return requestWrapper[operaciones.ConsultaEventoSignificativo]{request: b.request}
 }

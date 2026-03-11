@@ -23,7 +23,7 @@ type SiatOperacionesService struct {
 }
 
 // ConsultaPuntoVenta implements [port.SiatOperacionesPort].
-func (s *SiatOperacionesService) ConsultaPuntoVenta(ctx context.Context, config config.Config, opaqueReq any) (*soap.EnvelopeResponse[operaciones.ConsultaPuntoVentaResponse], error) {
+func (s *SiatOperacionesService) ConsultaPuntoVenta(ctx context.Context, config config.Config, opaqueReq models.ConsultaPuntoVenta) (*soap.EnvelopeResponse[operaciones.ConsultaPuntoVentaResponse], error) {
 	req := models.GetInternalRequest[operaciones.ConsultaPuntoVenta](opaqueReq)
 	xmlBody, err := buildRequest(req)
 	if err != nil {
@@ -46,7 +46,7 @@ func (s *SiatOperacionesService) ConsultaPuntoVenta(ctx context.Context, config 
 }
 
 // CierreOperacionesSistema implements [port.SiatOperacionesPort].
-func (s *SiatOperacionesService) CierreOperacionesSistema(ctx context.Context, config config.Config, opaqueReq any) (*soap.EnvelopeResponse[operaciones.CierreOperacionesSistemaResponse], error) {
+func (s *SiatOperacionesService) CierreOperacionesSistema(ctx context.Context, config config.Config, opaqueReq models.CierreOperacionesSistema) (*soap.EnvelopeResponse[operaciones.CierreOperacionesSistemaResponse], error) {
 	req := models.GetInternalRequest[operaciones.CierreOperacionesSistema](opaqueReq)
 	xmlBody, err := buildRequest(req)
 	if err != nil {
@@ -69,7 +69,7 @@ func (s *SiatOperacionesService) CierreOperacionesSistema(ctx context.Context, c
 }
 
 // CierrePuntoVenta implements [port.SiatOperacionesPort].
-func (s *SiatOperacionesService) CierrePuntoVenta(ctx context.Context, config config.Config, opaqueReq any) (*soap.EnvelopeResponse[operaciones.CierrePuntoVentaResponse], error) {
+func (s *SiatOperacionesService) CierrePuntoVenta(ctx context.Context, config config.Config, opaqueReq models.CierrePuntoVenta) (*soap.EnvelopeResponse[operaciones.CierrePuntoVentaResponse], error) {
 	req := models.GetInternalRequest[operaciones.CierrePuntoVenta](opaqueReq)
 	xmlBody, err := buildRequest(req)
 	if err != nil {
@@ -93,7 +93,7 @@ func (s *SiatOperacionesService) CierrePuntoVenta(ctx context.Context, config co
 }
 
 // ConsultaEventosSignificativos implements [port.SiatOperacionesPort].
-func (s *SiatOperacionesService) ConsultaEventosSignificativos(ctx context.Context, config config.Config, opaqueReq any) (*soap.EnvelopeResponse[operaciones.ConsultaEventoSignificativoResponse], error) {
+func (s *SiatOperacionesService) ConsultaEventosSignificativos(ctx context.Context, config config.Config, opaqueReq models.ConsultaEventoSignificativo) (*soap.EnvelopeResponse[operaciones.ConsultaEventoSignificativoResponse], error) {
 	req := models.GetInternalRequest[operaciones.ConsultaEventoSignificativo](opaqueReq)
 	xmlBody, err := buildRequest(req)
 	if err != nil {
@@ -116,7 +116,7 @@ func (s *SiatOperacionesService) ConsultaEventosSignificativos(ctx context.Conte
 }
 
 // RegistroEventosSignificativos implements [port.SiatOperacionesPort].
-func (s *SiatOperacionesService) RegistroEventosSignificativos(ctx context.Context, config config.Config, opaqueReq any) (*soap.EnvelopeResponse[operaciones.RegistroEventoSignificativoResponse], error) {
+func (s *SiatOperacionesService) RegistroEventosSignificativos(ctx context.Context, config config.Config, opaqueReq models.RegistroEventoSignificativo) (*soap.EnvelopeResponse[operaciones.RegistroEventoSignificativoResponse], error) {
 	req := models.GetInternalRequest[operaciones.RegistroEventoSignificativo](opaqueReq)
 	xmlBody, err := buildRequest(req)
 	if err != nil {
@@ -139,8 +139,8 @@ func (s *SiatOperacionesService) RegistroEventosSignificativos(ctx context.Conte
 }
 
 // VerificarComunicacion implements [port.SiatOperacionesPort].
-func (s *SiatOperacionesService) VerificarComunicacion(ctx context.Context, config config.Config) (*soap.EnvelopeResponse[operaciones.VerificarComunicacionResponse], error) {
-	req := operaciones.VerificarComunicacion{}
+func (s *SiatOperacionesService) VerificarComunicacion(ctx context.Context, config config.Config, opaqueReq models.VerificarComunicacionOperaciones) (*soap.EnvelopeResponse[operaciones.VerificarComunicacionResponse], error) {
+	req := models.GetInternalRequest[operaciones.VerificarComunicacion](opaqueReq)
 	xmlBody, err := buildRequest(req)
 	if err != nil {
 		return nil, err
@@ -163,7 +163,7 @@ func (s *SiatOperacionesService) VerificarComunicacion(ctx context.Context, conf
 }
 
 // RegistroPuntoVenta implements [port.SiatOperacionesPort].
-func (s *SiatOperacionesService) RegistroPuntoVenta(ctx context.Context, config config.Config, opaqueReq any) (*soap.EnvelopeResponse[operaciones.RegistroPuntoVentaResponse], error) {
+func (s *SiatOperacionesService) RegistroPuntoVenta(ctx context.Context, config config.Config, opaqueReq models.RegistroPuntoVenta) (*soap.EnvelopeResponse[operaciones.RegistroPuntoVentaResponse], error) {
 	req := models.GetInternalRequest[operaciones.RegistroPuntoVenta](opaqueReq)
 	xmlBody, err := buildRequest(req)
 	if err != nil {
@@ -186,7 +186,7 @@ func (s *SiatOperacionesService) RegistroPuntoVenta(ctx context.Context, config 
 }
 
 // RegistroPuntoVentaComisionista implements [port.SiatOperacionesPort].
-func (s *SiatOperacionesService) RegistroPuntoVentaComisionista(ctx context.Context, config config.Config, opaqueReq any) (*soap.EnvelopeResponse[operaciones.RegistroPuntoVentaComisionistaResponse], error) {
+func (s *SiatOperacionesService) RegistroPuntoVentaComisionista(ctx context.Context, config config.Config, opaqueReq models.RegistroPuntoVentaComisionista) (*soap.EnvelopeResponse[operaciones.RegistroPuntoVentaComisionistaResponse], error) {
 	req := models.GetInternalRequest[operaciones.RegistroPuntoVentaComisionista](opaqueReq)
 	xmlBody, err := buildRequest(req)
 	if err != nil {

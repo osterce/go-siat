@@ -8,7 +8,7 @@ type ValidacionRecepcionMasivaFactura struct {
 }
 
 type SolicitudValidacionRecepcionMasiva struct {
-	SolicitudRecepcionFactura
+	SolicitudRecepcion
 	CodigoRecepcion string `xml:"codigoRecepcion" json:"codigoRecepcion"`
 }
 

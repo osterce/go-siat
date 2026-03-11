@@ -9,9 +9,9 @@ import (
 	"github.com/ron86i/go-siat/internal/adapter/service"
 )
 
-// siatServices agrupa todas las implementaciones de los servicios del SIAT
+// SiatServices agrupa todas las implementaciones de los servicios del SIAT
 // accesibles a través de un único punto de entrada orientado a métodos.
-type siatServices struct {
+type SiatServices struct {
 	operaciones    *service.SiatOperacionesService
 	sincronizacion *service.SiatSincronizacionService
 	codigos        *service.SiatCodigosService
@@ -19,29 +19,29 @@ type siatServices struct {
 }
 
 // Operaciones retorna el servicio para la gestión de puntos de venta y eventos significativos.
-func (s *siatServices) Operaciones() *service.SiatOperacionesService {
+func (s *SiatServices) Operaciones() *service.SiatOperacionesService {
 	return s.operaciones
 }
 
 // Sincronizacion retorna el servicio para la obtención de catálogos y parametrizaciones del SIAT.
-func (s *siatServices) Sincronizacion() *service.SiatSincronizacionService {
+func (s *SiatServices) Sincronizacion() *service.SiatSincronizacionService {
 	return s.sincronizacion
 }
 
 // Codigos retorna el servicio para la solicitud de códigos CUIS y CUFD, y validación de NIT.
-func (s *siatServices) Codigos() *service.SiatCodigosService {
+func (s *SiatServices) Codigos() *service.SiatCodigosService {
 	return s.codigos
 }
 
 // CompraVenta retorna el servicio para el envío y anulación de facturas comerciales.
-func (s *siatServices) CompraVenta() *service.SiatCompraVentaService {
+func (s *SiatServices) CompraVenta() *service.SiatCompraVentaService {
 	return s.compraVenta
 }
 
 // New crea e inicializa una nueva instancia unificada de los servicios del SIAT.
 // Requiere la URL base del servicio (Pruebas o Producción) y un cliente HTTP opcional.
 // Si httpClient es nil, se utilizará uno por defecto con un tiempo de espera (timeout) de 15 segundos.
-func New(baseUrl string, httpClient *http.Client) (*siatServices, error) {
+func New(baseUrl string, httpClient *http.Client) (*SiatServices, error) {
 	if httpClient == nil {
 		httpClient = &http.Client{
 			Timeout: 15 * time.Second,
@@ -69,7 +69,7 @@ func New(baseUrl string, httpClient *http.Client) (*siatServices, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &siatServices{
+	return &SiatServices{
 		operaciones:    operaciones,
 		sincronizacion: sincronizacion,
 		codigos:        codigos,

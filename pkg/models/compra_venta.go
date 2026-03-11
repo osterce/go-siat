@@ -1,7 +1,6 @@
 package models
 
 import (
-	"encoding/xml"
 	"time"
 
 	"github.com/ron86i/go-siat/internal/core/domain/datatype"
@@ -10,32 +9,303 @@ import (
 
 // --- Interfaces opacas para restringir el acceso a los atributos ---
 
-// AnulacionFacturaRequest representa una solicitud para anular una factura emitida.
-type AnulacionFacturaRequest interface{ commonRequest() }
+type VentaAnexo interface{}
 
-// RecepcionFacturaRequest representa una solicitud para el envío de una factura al SIAT.
-type RecepcionFacturaRequest interface{ commonRequest() }
+// RecepcionAnexos representa una solicitud para la recepción de anexos de una factura.
+type RecepcionAnexos interface{}
 
-// FacturaRequest representa la estructura de una factura lista para ser procesada.
-type FacturaRequest interface{ commonRequest() }
+// VerificacionEstadoFactura representa una solicitud para la verificación del estado de una factura.
+type VerificacionEstadoFactura interface{}
 
-// CabeceraRequest representa la cabecera de una factura.
-type CabeceraRequest interface{ commonRequest() }
+// ValidacionRecepcionMasivaFactura representa una solicitud para la validación de la recepción masiva de facturas.
+type ValidacionRecepcionMasivaFactura interface{}
 
-// DetalleRequest representa un ítem de detalle dentro de una factura.
-type DetalleRequest interface{ commonRequest() }
+// RecepcionMasivaFactura representa una solicitud para la recepción masiva de facturas.
+type RecepcionMasivaFactura interface{}
+
+// VerificarComunicacionCompraVenta representa una solicitud para verificar la comunicación con el SIAT.
+type VerificarComunicacionCompraVenta interface{}
+
+// ValidacionRecepcionPaqueteFactura representa una solicitud para validar la recepción de paquetes de facturas.
+type ValidacionRecepcionPaqueteFactura interface{}
+
+// RecepcionPaqueteFactura representa una solicitud para la recepción de paquetes de facturas.
+type RecepcionPaqueteFactura interface{}
+
+// ReversionAnulacionFactura representa una solicitud para la reversión de anulación de factura.
+type ReversionAnulacionFactura interface{}
+
+// AnulacionFactura representa una solicitud para anular una factura emitida.
+type AnulacionFactura interface{}
+
+// RecepcionFactura representa una solicitud para el envío de una factura al SIAT.
+type RecepcionFactura interface{}
 
 // requestWrapper satisface todas estas interfaces mediante el método commonRequest() en common.go
 
 type compraVentaNamespace struct{}
 
 // CompraVenta expone utilidades y constructores de solicitudes para el módulo de Facturación del SIAT.
-var CompraVenta = compraVentaNamespace{}
+func CompraVenta() compraVentaNamespace {
+	return compraVentaNamespace{}
+}
 
 // --- Builders para la creación de solicitudes ---
 
+func (compraVentaNamespace) NewRecepcionAnexosBuilder() *RecepcionAnexosBuilder {
+	return &RecepcionAnexosBuilder{
+		request: &compra_venta.RecepcionAnexos{},
+	}
+}
+
+type RecepcionAnexosBuilder struct {
+	request *compra_venta.RecepcionAnexos
+}
+
+func (b *RecepcionAnexosBuilder) WithCodigoAmbiente(codigoAmbiente int) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.CodigoAmbiente = codigoAmbiente
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.CodigoPuntoVenta = codigoPuntoVenta
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithCodigoSistema(codigoSistema string) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.CodigoSistema = codigoSistema
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithCodigoSucursal(codigoSucursal int) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.CodigoSucursal = codigoSucursal
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithCuis(cuis string) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.Cuis = cuis
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithNit(nit int64) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.Nit = nit
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithCuf(cuf string) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.Cuf = cuf
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) AddAnexo(anexo compra_venta.VentaAnexo) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.AnexosList = append(b.request.SolicitudRecepcionAnexos.AnexosList, anexo)
+	return b
+}
+func (b *RecepcionAnexosBuilder) WithCodigoDocumentoSector(codigoDocumentoSector int) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.CodigoDocumentoSector = codigoDocumentoSector
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithCodigoEmision(codigoEmision int) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.CodigoEmision = codigoEmision
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithCodigoModalidad(codigoModalidad int) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.CodigoModalidad = codigoModalidad
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithCufd(cufd string) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.Cufd = cufd
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) WithTipoFacturaDocumento(tipoFacturaDocumento int) *RecepcionAnexosBuilder {
+	b.request.SolicitudRecepcionAnexos.TipoFacturaDocumento = tipoFacturaDocumento
+	return b
+}
+
+func (b *RecepcionAnexosBuilder) Build() RecepcionAnexos {
+	return requestWrapper[compra_venta.RecepcionAnexos]{request: b.request}
+}
+
+func (compraVentaNamespace) NewRecepcionPaqueteFacturaBuilder() *RecepcionPaqueteFacturaBuilder {
+	return &RecepcionPaqueteFacturaBuilder{
+		request: &compra_venta.RecepcionPaqueteFactura{},
+	}
+}
+
+type RecepcionPaqueteFacturaBuilder struct {
+	request *compra_venta.RecepcionPaqueteFactura
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCodigoAmbiente(codigoAmbiente int) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.CodigoAmbiente = codigoAmbiente
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCodigoDocumentoSector(codigoDocumentoSector int) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.CodigoDocumentoSector = codigoDocumentoSector
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCodigoEmision(codigoEmision int) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.CodigoEmision = codigoEmision
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCodigoModalidad(codigoModalidad int) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.CodigoModalidad = codigoModalidad
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.CodigoPuntoVenta = codigoPuntoVenta
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCodigoSistema(codigoSistema string) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.CodigoSistema = codigoSistema
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCodigoSucursal(codigoSucursal int) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.CodigoSucursal = codigoSucursal
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCufd(cufd string) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.Cufd = cufd
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCuis(cuis string) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.Cuis = cuis
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithNit(nit int64) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.Nit = nit
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithTipoFacturaDocumento(tipoFacturaDocumento int) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.SolicitudRecepcion.TipoFacturaDocumento = tipoFacturaDocumento
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithArchivo(archivo string) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.Archivo = archivo
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithFechaEnvio(fechaEnvio time.Time) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.FechaEnvio = datatype.NewTimeSiat(fechaEnvio)
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithHashArchivo(hashArchivo string) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.HashArchivo = hashArchivo
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCafc(cafc string) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.Cafc = cafc
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCantidadFacturas(cantidadFacturas int) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.CantidadFacturas = cantidadFacturas
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) WithCodigoEvento(codigoEvento int64) *RecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioRecepcionPaquete.CodigoEvento = codigoEvento
+	return b
+}
+
+func (b *RecepcionPaqueteFacturaBuilder) Build() RecepcionPaqueteFactura {
+	return requestWrapper[compra_venta.RecepcionPaqueteFactura]{request: b.request}
+}
+
+// ReversionAnulacionFacturaRequest inicia la construcción de una solicitud de reversión de anulación de factura.
+func (compraVentaNamespace) NewReversionAnulacionFacturaBuilder() *ReversionAnulacionFacturaBuilder {
+	return &ReversionAnulacionFacturaBuilder{
+		request: &compra_venta.ReversionAnulacionFactura{},
+	}
+}
+
+type ReversionAnulacionFacturaBuilder struct {
+	request *compra_venta.ReversionAnulacionFactura
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCodigoAmbiente(codigoAmbiente int) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.CodigoAmbiente = codigoAmbiente
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCodigoDocumentoSector(codigoDocumentoSector int) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.CodigoDocumentoSector = codigoDocumentoSector
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCodigoEmision(codigoEmision int) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.CodigoEmision = codigoEmision
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCodigoModalidad(codigoModalidad int) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.CodigoModalidad = codigoModalidad
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.CodigoPuntoVenta = codigoPuntoVenta
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCodigoSistema(codigoSistema string) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.CodigoSistema = codigoSistema
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCodigoSucursal(codigoSucursal int) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.CodigoSucursal = codigoSucursal
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCufd(cufd string) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.Cufd = cufd
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCuis(cuis string) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.Cuis = cuis
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithNit(nit int64) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.Nit = nit
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithTipoFacturaDocumento(tipoFacturaDocumento int) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.TipoFacturaDocumento = tipoFacturaDocumento
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) WithCuf(cuf string) *ReversionAnulacionFacturaBuilder {
+	b.request.SolicitudReversionAnulacion.Cuf = cuf
+	return b
+}
+
+func (b *ReversionAnulacionFacturaBuilder) Build() ReversionAnulacionFactura {
+	return requestWrapper[compra_venta.ReversionAnulacionFactura]{request: b.request}
+}
+
 // NewAnulacionFacturaRequest inicia la construcción de una solicitud de anulación.
-func (compraVentaNamespace) NewAnulacionFacturaRequest() *AnulacionFacturaBuilder {
+func (compraVentaNamespace) NewAnulacionFacturaBuilder() *AnulacionFacturaBuilder {
 	return &AnulacionFacturaBuilder{
 		request: &compra_venta.AnulacionFactura{},
 	}
@@ -110,12 +380,12 @@ func (b *AnulacionFacturaBuilder) WithCodigoMotivo(codigoMotivo int) *AnulacionF
 	return b
 }
 
-func (b *AnulacionFacturaBuilder) Build() AnulacionFacturaRequest {
+func (b *AnulacionFacturaBuilder) Build() AnulacionFactura {
 	return requestWrapper[compra_venta.AnulacionFactura]{request: b.request}
 }
 
 // NewRecepcionFacturaRequest inicia la construcción de una solicitud de recepción de factura.
-func (compraVentaNamespace) NewRecepcionFacturaRequest() *RecepcionFacturaBuilder {
+func (compraVentaNamespace) NewRecepcionFacturaBuilder() *RecepcionFacturaBuilder {
 	return &RecepcionFacturaBuilder{
 		request: &compra_venta.RecepcionFactura{},
 	}
@@ -195,289 +465,309 @@ func (b *RecepcionFacturaBuilder) WithHashArchivo(hashArchivo string) *Recepcion
 	return b
 }
 
-func (b *RecepcionFacturaBuilder) Build() RecepcionFacturaRequest {
+func (b *RecepcionFacturaBuilder) Build() RecepcionFactura {
 	return requestWrapper[compra_venta.RecepcionFactura]{request: b.request}
 }
 
-// NewFacturaCompraVenta inicia la construcción de una FacturaCompraVenta.
-func (compraVentaNamespace) NewFacturaCompraVenta() *FacturaCompraVentaBuilder {
-	return &FacturaCompraVentaBuilder{
-		factura: &compra_venta.FacturaCompraVenta{
-			XMLName:           xml.Name{Local: "facturaElectronicaCompraVenta"},
-			XmlnsXsi:          "http://www.w3.org/2001/XMLSchema-instance",
-			XsiSchemaLocation: "facturaElectronicaCompraVenta.xsd",
-		},
+// NewRecepcionMasivaFacturaBuilder inicia la construcción de una solicitud de recepción masiva de factura.
+func (compraVentaNamespace) NewRecepcionMasivaFacturaBuilder() *RecepcionMasivaFacturaBuilder {
+	return &RecepcionMasivaFacturaBuilder{
+		request: &compra_venta.RecepcionMasivaFactura{},
 	}
 }
 
-// NewCabecera inicia la construcción de la cabecera de una factura.
-func (compraVentaNamespace) NewCabecera() *CabeceraBuilder {
-	return &CabeceraBuilder{
-		cabecera: &compra_venta.Cabecera{},
+type RecepcionMasivaFacturaBuilder struct {
+	request *compra_venta.RecepcionMasivaFactura
+}
+
+func (b *RecepcionMasivaFacturaBuilder) WithCodigoAmbiente(codigoAmbiente int) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.CodigoAmbiente = codigoAmbiente
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCodigoDocumentoSector(codigoDocumentoSector int) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.CodigoDocumentoSector = codigoDocumentoSector
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCodigoEmision(codigoEmision int) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.CodigoEmision = codigoEmision
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCodigoModalidad(codigoModalidad int) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.CodigoModalidad = codigoModalidad
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.CodigoPuntoVenta = codigoPuntoVenta
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCodigoSistema(codigoSistema string) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.CodigoSistema = codigoSistema
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCodigoSucursal(codigoSucursal int) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.CodigoSucursal = codigoSucursal
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCufd(cufd string) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.Cufd = cufd
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCuis(cuis string) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.Cuis = cuis
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithNit(nit int64) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.Nit = nit
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithTipoFacturaDocumento(tipoFacturaDocumento int) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.SolicitudRecepcion.TipoFacturaDocumento = tipoFacturaDocumento
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithArchivo(archivo string) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.Archivo = archivo
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithFechaEnvio(fechaEnvio time.Time) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.FechaEnvio = datatype.NewTimeSiat(fechaEnvio)
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithHashArchivo(hashArchivo string) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.SolicitudRecepcionFactura.HashArchivo = hashArchivo
+	return b
+}
+func (b *RecepcionMasivaFacturaBuilder) WithCantidadFacturas(cantidadFacturas int) *RecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioRecepcionMasiva.CantidadFacturas = cantidadFacturas
+	return b
+}
+
+func (b *RecepcionMasivaFacturaBuilder) Build() RecepcionMasivaFactura {
+	return requestWrapper[compra_venta.RecepcionMasivaFactura]{request: b.request}
+}
+
+// NewVerificarComunicacionBuilder inicia la construcción de una solicitud de verificación de comunicación.
+func (compraVentaNamespace) NewVerificarComunicacionBuilder() *VerificarComunicacionBuilder {
+	return &VerificarComunicacionBuilder{
+		request: &compra_venta.VerificarComunicacion{},
 	}
 }
 
-// NewDetalle inicia la construcción de un ítem de detalle de una factura.
-func (compraVentaNamespace) NewDetalle() *DetalleBuilder {
-	return &DetalleBuilder{
-		detalle: &compra_venta.Detalle{},
+type VerificarComunicacionBuilder struct {
+	request *compra_venta.VerificarComunicacion
+}
+
+func (b *VerificarComunicacionBuilder) Build() VerificarComunicacionCompraVenta {
+	return requestWrapper[compra_venta.VerificarComunicacion]{request: b.request}
+}
+
+// NewValidacionRecepcionPaqueteFacturaBuilder inicia la construcción de una solicitud de validación de paquete de factura.
+func (compraVentaNamespace) NewValidacionRecepcionPaqueteFacturaBuilder() *ValidacionRecepcionPaqueteFacturaBuilder {
+	return &ValidacionRecepcionPaqueteFacturaBuilder{
+		request: &compra_venta.ValidacionRecepcionPaqueteFactura{},
 	}
 }
 
-type FacturaCompraVentaBuilder struct {
-	factura *compra_venta.FacturaCompraVenta
+type ValidacionRecepcionPaqueteFacturaBuilder struct {
+	request *compra_venta.ValidacionRecepcionPaqueteFactura
 }
 
-func (b *FacturaCompraVentaBuilder) WithCabecera(req CabeceraRequest) *FacturaCompraVentaBuilder {
-	if c := GetInternalRequest[compra_venta.Cabecera](req); c != nil {
-		b.factura.Cabecera = *c
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCodigoAmbiente(codigoAmbiente int) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.CodigoAmbiente = codigoAmbiente
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCodigoDocumentoSector(codigoDocumentoSector int) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.CodigoDocumentoSector = codigoDocumentoSector
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCodigoEmision(codigoEmision int) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.CodigoEmision = codigoEmision
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCodigoModalidad(codigoModalidad int) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.CodigoModalidad = codigoModalidad
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.CodigoPuntoVenta = codigoPuntoVenta
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCodigoSistema(codigoSistema string) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.CodigoSistema = codigoSistema
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCodigoSucursal(codigoSucursal int) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.CodigoSucursal = codigoSucursal
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCufd(cufd string) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.Cufd = cufd
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCuis(cuis string) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.Cuis = cuis
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithNit(nit int64) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.Nit = nit
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithTipoFacturaDocumento(tipoFacturaDocumento int) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.SolicitudRecepcion.TipoFacturaDocumento = tipoFacturaDocumento
+	return b
+}
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) WithCodigoRecepcion(codigoRecepcion string) *ValidacionRecepcionPaqueteFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionPaquete.CodigoRecepcion = codigoRecepcion
+	return b
+}
+
+func (b *ValidacionRecepcionPaqueteFacturaBuilder) Build() ValidacionRecepcionPaqueteFactura {
+	return requestWrapper[compra_venta.ValidacionRecepcionPaqueteFactura]{request: b.request}
+}
+
+func (compraVentaNamespace) NewVerificacionEstadoFacturaBuilder() *VerificacionEstadoFacturaBuilder {
+	return &VerificacionEstadoFacturaBuilder{
+		request: &compra_venta.VerificacionEstadoFactura{},
 	}
+}
+
+type VerificacionEstadoFacturaBuilder struct {
+	request *compra_venta.VerificacionEstadoFactura
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCodigoAmbiente(codigoAmbiente int) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.CodigoAmbiente = codigoAmbiente
 	return b
 }
 
-func (b *FacturaCompraVentaBuilder) AddDetalle(req DetalleRequest) *FacturaCompraVentaBuilder {
-	if d := GetInternalRequest[compra_venta.Detalle](req); d != nil {
-		b.factura.Detalle = append(b.factura.Detalle, *d)
+func (b *VerificacionEstadoFacturaBuilder) WithCodigoDocumentoSector(codigoDocumentoSector int) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.CodigoDocumentoSector = codigoDocumentoSector
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCodigoEmision(codigoEmision int) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.CodigoEmision = codigoEmision
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCodigoModalidad(codigoModalidad int) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.CodigoModalidad = codigoModalidad
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.CodigoPuntoVenta = codigoPuntoVenta
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCodigoSistema(codigoSistema string) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.CodigoSistema = codigoSistema
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCodigoSucursal(codigoSucursal int) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.CodigoSucursal = codigoSucursal
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCufd(cufd string) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.Cufd = cufd
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCuis(cuis string) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.Cuis = cuis
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithNit(nit int64) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.Nit = nit
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithTipoFacturaDocumento(tipoFacturaDocumento int) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.TipoFacturaDocumento = tipoFacturaDocumento
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) WithCuf(cuf string) *VerificacionEstadoFacturaBuilder {
+	b.request.SolicitudServicioVerificacionEstadoFactura.Cuf = cuf
+	return b
+}
+
+func (b *VerificacionEstadoFacturaBuilder) Build() VerificacionEstadoFactura {
+	return requestWrapper[compra_venta.VerificacionEstadoFactura]{request: b.request}
+}
+
+func (compraVentaNamespace) NewValidacionRecepcionMasivaFacturaBuilder() *ValidacionRecepcionMasivaFacturaBuilder {
+	return &ValidacionRecepcionMasivaFacturaBuilder{
+		request: &compra_venta.ValidacionRecepcionMasivaFactura{},
 	}
+}
+
+type ValidacionRecepcionMasivaFacturaBuilder struct {
+	request *compra_venta.ValidacionRecepcionMasivaFactura
+}
+
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCodigoAmbiente(codigoAmbiente int) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.CodigoAmbiente = codigoAmbiente
 	return b
 }
 
-func (b *FacturaCompraVentaBuilder) WithModalidad(tipo int) *FacturaCompraVentaBuilder {
-
-	switch tipo {
-	case 1:
-		b.factura.XMLName = xml.Name{Local: "facturaElectronicaCompraVenta"}
-		b.factura.XsiSchemaLocation = "facturaElectronicaCompraVenta.xsd"
-	case 2:
-		b.factura.XMLName = xml.Name{Local: "facturaComputarizadaCompraVenta"}
-		b.factura.XsiSchemaLocation = "facturaComputarizadaCompraVenta.xsd"
-	}
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCodigoDocumentoSector(codigoDocumentoSector int) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.CodigoDocumentoSector = codigoDocumentoSector
 	return b
 }
 
-func (b *FacturaCompraVentaBuilder) Build() FacturaRequest {
-	return requestWrapper[compra_venta.FacturaCompraVenta]{request: b.factura}
-}
-
-// CabeceraBuilder ayuda a configurar la cabecera de la factura.
-type CabeceraBuilder struct {
-	cabecera *compra_venta.Cabecera
-}
-
-func (b *CabeceraBuilder) WithNitEmisor(nitEmisor int64) *CabeceraBuilder {
-	b.cabecera.NitEmisor = nitEmisor
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCodigoEmision(codigoEmision int) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.CodigoEmision = codigoEmision
 	return b
 }
 
-func (b *CabeceraBuilder) WithRazonSocialEmisor(razonSocialEmisor string) *CabeceraBuilder {
-	b.cabecera.RazonSocialEmisor = razonSocialEmisor
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCodigoModalidad(codigoModalidad int) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.CodigoModalidad = codigoModalidad
 	return b
 }
 
-func (b *CabeceraBuilder) WithMunicipio(municipio string) *CabeceraBuilder {
-	b.cabecera.Municipio = municipio
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.CodigoPuntoVenta = codigoPuntoVenta
 	return b
 }
 
-func (b *CabeceraBuilder) WithTelefono(telefono string) *CabeceraBuilder {
-	b.cabecera.Telefono = compra_venta.Nilable[string]{Value: &telefono}
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCodigoSistema(codigoSistema string) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.CodigoSistema = codigoSistema
 	return b
 }
 
-func (b *CabeceraBuilder) WithNumeroFactura(numeroFactura int64) *CabeceraBuilder {
-	b.cabecera.NumeroFactura = numeroFactura
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCodigoSucursal(codigoSucursal int) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.CodigoSucursal = codigoSucursal
 	return b
 }
 
-func (b *CabeceraBuilder) WithCuf(cuf string) *CabeceraBuilder {
-	b.cabecera.Cuf = cuf
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCufd(cufd string) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.Cufd = cufd
 	return b
 }
 
-func (b *CabeceraBuilder) WithCufd(cufd string) *CabeceraBuilder {
-	b.cabecera.Cufd = cufd
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCuis(cuis string) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.Cuis = cuis
 	return b
 }
 
-func (b *CabeceraBuilder) WithCodigoSucursal(codigoSucursal int) *CabeceraBuilder {
-	b.cabecera.CodigoSucursal = codigoSucursal
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithNit(nit int64) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.Nit = nit
 	return b
 }
 
-func (b *CabeceraBuilder) WithDireccion(direccion string) *CabeceraBuilder {
-	b.cabecera.Direccion = direccion
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithTipoFacturaDocumento(tipoFacturaDocumento int) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.TipoFacturaDocumento = tipoFacturaDocumento
 	return b
 }
 
-func (b *CabeceraBuilder) WithCodigoPuntoVenta(codigoPuntoVenta int) *CabeceraBuilder {
-	b.cabecera.CodigoPuntoVenta = codigoPuntoVenta
+func (b *ValidacionRecepcionMasivaFacturaBuilder) WithCodigoRecepcion(codigoRecepcion string) *ValidacionRecepcionMasivaFacturaBuilder {
+	b.request.SolicitudServicioValidacionRecepcionMasivaFactura.CodigoRecepcion = codigoRecepcion
 	return b
 }
 
-func (b *CabeceraBuilder) WithFechaEmision(fechaEmision string) *CabeceraBuilder {
-	b.cabecera.FechaEmision = fechaEmision
-	return b
-}
-
-func (b *CabeceraBuilder) WithNombreRazonSocial(nombreRazonSocial string) *CabeceraBuilder {
-	b.cabecera.NombreRazonSocial = compra_venta.Nilable[string]{Value: &nombreRazonSocial}
-	return b
-}
-
-func (b *CabeceraBuilder) WithCodigoTipoDocumentoIdentidad(codigoTipoDocumentoIdentidad int) *CabeceraBuilder {
-	b.cabecera.CodigoTipoDocumentoIdentidad = codigoTipoDocumentoIdentidad
-	return b
-}
-
-func (b *CabeceraBuilder) WithNumeroDocumento(numeroDocumento string) *CabeceraBuilder {
-	b.cabecera.NumeroDocumento = numeroDocumento
-	return b
-}
-
-func (b *CabeceraBuilder) WithComplemento(complemento string) *CabeceraBuilder {
-	b.cabecera.Complemento = compra_venta.Nilable[string]{Value: &complemento}
-	return b
-}
-
-func (b *CabeceraBuilder) WithCodigoCliente(codigoCliente string) *CabeceraBuilder {
-	b.cabecera.CodigoCliente = codigoCliente
-	return b
-}
-
-func (b *CabeceraBuilder) WithCodigoMetodoPago(codigoMetodoPago int) *CabeceraBuilder {
-	b.cabecera.CodigoMetodoPago = codigoMetodoPago
-	return b
-}
-
-func (b *CabeceraBuilder) WithNumeroTarjeta(numeroTarjeta int64) *CabeceraBuilder {
-	b.cabecera.NumeroTarjeta = compra_venta.Nilable[int64]{Value: &numeroTarjeta}
-	return b
-}
-
-func (b *CabeceraBuilder) WithMontoTotal(montoTotal float64) *CabeceraBuilder {
-	b.cabecera.MontoTotal = montoTotal
-	return b
-}
-
-func (b *CabeceraBuilder) WithMontoTotalSujetoIva(montoTotalSujetoIva float64) *CabeceraBuilder {
-	b.cabecera.MontoTotalSujetoIva = montoTotalSujetoIva
-	return b
-}
-
-func (b *CabeceraBuilder) WithCodigoMoneda(codigoMoneda int) *CabeceraBuilder {
-	b.cabecera.CodigoMoneda = codigoMoneda
-	return b
-}
-
-func (b *CabeceraBuilder) WithTipoCambio(tipoCambio float64) *CabeceraBuilder {
-	b.cabecera.TipoCambio = tipoCambio
-	return b
-}
-
-func (b *CabeceraBuilder) WithMontoTotalMoneda(montoTotalMoneda float64) *CabeceraBuilder {
-	b.cabecera.MontoTotalMoneda = montoTotalMoneda
-	return b
-}
-
-func (b *CabeceraBuilder) WithMontoGiftCard(montoGiftCard float64) *CabeceraBuilder {
-	b.cabecera.MontoGiftCard = compra_venta.Nilable[float64]{Value: &montoGiftCard}
-	return b
-}
-
-func (b *CabeceraBuilder) WithDescuentoAdicional(descuentoAdicional float64) *CabeceraBuilder {
-	b.cabecera.DescuentoAdicional = compra_venta.Nilable[float64]{Value: &descuentoAdicional}
-	return b
-}
-
-func (b *CabeceraBuilder) WithCodigoExcepcion(codigoExcepcion int64) *CabeceraBuilder {
-	b.cabecera.CodigoExcepcion = compra_venta.Nilable[int64]{Value: &codigoExcepcion}
-	return b
-}
-
-func (b *CabeceraBuilder) WithCafc(cafc string) *CabeceraBuilder {
-	b.cabecera.Cafc = compra_venta.Nilable[string]{Value: &cafc}
-	return b
-}
-
-func (b *CabeceraBuilder) WithLeyenda(leyenda string) *CabeceraBuilder {
-	b.cabecera.Leyenda = leyenda
-	return b
-}
-
-func (b *CabeceraBuilder) WithUsuario(usuario string) *CabeceraBuilder {
-	b.cabecera.Usuario = usuario
-	return b
-}
-
-func (b *CabeceraBuilder) WithCodigoDocumentoSector(codigoDocumentoSector int) *CabeceraBuilder {
-	b.cabecera.CodigoDocumentoSector = codigoDocumentoSector
-	return b
-}
-
-func (b *CabeceraBuilder) Build() CabeceraRequest {
-	return requestWrapper[compra_venta.Cabecera]{request: b.cabecera}
-}
-
-// DetalleBuilder ayuda a configurar un ítem de detalle de la factura.
-type DetalleBuilder struct {
-	detalle *compra_venta.Detalle
-}
-
-func (b *DetalleBuilder) WithActividadEconomica(actividadEconomica string) *DetalleBuilder {
-	b.detalle.ActividadEconomica = actividadEconomica
-	return b
-}
-
-func (b *DetalleBuilder) WithCodigoProductoSin(codigoProductoSin string) *DetalleBuilder {
-	b.detalle.CodigoProductoSin = codigoProductoSin
-	return b
-}
-
-func (b *DetalleBuilder) WithCodigoProducto(codigoProducto string) *DetalleBuilder {
-	b.detalle.CodigoProducto = codigoProducto
-	return b
-}
-
-func (b *DetalleBuilder) WithDescripcion(descripcion string) *DetalleBuilder {
-	b.detalle.Descripcion = descripcion
-	return b
-}
-
-func (b *DetalleBuilder) WithCantidad(cantidad float64) *DetalleBuilder {
-	b.detalle.Cantidad = cantidad
-	return b
-}
-
-func (b *DetalleBuilder) WithUnidadMedida(unidadMedida int) *DetalleBuilder {
-	b.detalle.UnidadMedida = unidadMedida
-	return b
-}
-
-func (b *DetalleBuilder) WithPrecioUnitario(precioUnitario float64) *DetalleBuilder {
-	b.detalle.PrecioUnitario = precioUnitario
-	return b
-}
-
-func (b *DetalleBuilder) WithMontoDescuento(montoDescuento float64) *DetalleBuilder {
-	b.detalle.MontoDescuento = compra_venta.Nilable[float64]{Value: &montoDescuento}
-	return b
-}
-
-func (b *DetalleBuilder) WithSubTotal(subTotal float64) *DetalleBuilder {
-	b.detalle.SubTotal = subTotal
-	return b
-}
-
-func (b *DetalleBuilder) WithNumeroSerie(numeroSerie string) *DetalleBuilder {
-	b.detalle.NumeroSerie = compra_venta.Nilable[string]{Value: &numeroSerie}
-	return b
-}
-
-func (b *DetalleBuilder) WithNumeroImei(numeroImei string) *DetalleBuilder {
-	b.detalle.NumeroImei = compra_venta.Nilable[string]{Value: &numeroImei}
-	return b
-}
-
-func (b *DetalleBuilder) Build() DetalleRequest {
-	return requestWrapper[compra_venta.Detalle]{request: b.detalle}
+func (b *ValidacionRecepcionMasivaFacturaBuilder) Build() ValidacionRecepcionMasivaFactura {
+	return requestWrapper[compra_venta.ValidacionRecepcionMasivaFactura]{request: b.request}
 }

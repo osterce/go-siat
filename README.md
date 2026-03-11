@@ -1,7 +1,7 @@
 # go-siat
 
 [![Status](https://img.shields.io/badge/status-active-success)](https://github.com/ron86i/go-siat)
-[![Go Version](https://img.shields.io/badge/go-1.21+-00ADD8?logo=go)](https://go.dev/)
+[![Go Version](https://img.shields.io/badge/go-1.26+-00ADD8?logo=go)](https://go.dev/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 **go-siat** es un SDK robusto escrito en Go, diseñado para facilitar la integración con los servicios web SOAP del **SIAT (Sistema de Facturación de Impuestos Nacionales de Bolivia)**.
@@ -12,7 +12,7 @@
 
 - [Capacidades Implementadas](#-capacidades-implementadas)
 - [Guía de Inicio Rápido](#-guía-de-inicio-rápido)
-- [Ejemplos por Módulo](#-ejemplos-por-módulo)
+- [Referencia de Uso (Tests)](#-referencia-de-uso-tests)
 - [Licencia](#-licencia)
 
 ---
@@ -71,7 +71,7 @@ func main() {
     }
 
     // 2. Usar un Builder para crear una solicitud
-    req := models.Codigos.NewCuisRequest().
+    req := models.Codigos.NewCuisBuilder().
 		WithCodigoAmbiente(1).
 		WithCodigoModalidad(1).
 		WithCodigoPuntoVenta(0).
@@ -93,17 +93,22 @@ func main() {
 
 ---
 
-## 📦 Ejemplos por Módulo
+## 🧪 Referencia de Uso (Tests)
 
-Puedes encontrar ejemplos detallados y ejecutables en la carpeta [`examples/`](./examples):
+La mejor referencia para entender el uso detallado de cada servicio son los **Tests de Integración**. Estos tests muestran cómo construir solicitudes usando los *Builders* y cómo procesar las respuestas del SIAT.
 
-- **[Códigos](./examples/codigos/main.go)**: Flujo de CUIS y CUFD.
-- **[Sincronización](./examples/sincronizacion/main.go)**: Catálogos y productos.
-- **[Operaciones](./examples/operaciones/main.go)**: Puntos de venta y eventos.
-- **[Compra y Venta](./examples/compra_venta/main.go)**: Firma y envío de facturas.
+Puedes consultar los siguientes archivos en `internal/adapter/service/`:
+
+- **[Códigos](./internal/adapter/service/siat_codigos_service_test.go)**: Ejemplos de CUIS, CUFD, validación de NIT y más.
+- **[Sincronización](./internal/adapter/service/siat_sincronizacion_service_test.go)**: Ejemplos de sincronización de todas las paramétricas.
+- **[Operaciones](./internal/adapter/service/siat_operaciones_service_test.go)**: Registro de puntos de venta y eventos significativos.
+- **[Compra y Venta](./internal/adapter/service/siat_compra_venta_service_test.go)**: Recepción y anulación de facturas.
+
+> **TIP**
+> Para ejecutar estos tests, asegúrate de configurar las variables de entorno necesarias en un archivo `.env` basado en la configuración de tu ambiente del SIAT.
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT.
+Este proyecto está bajo la Licencia MIT. Más información en [LICENSE](./LICENSE).
