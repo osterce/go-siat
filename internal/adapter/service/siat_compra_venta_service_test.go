@@ -200,7 +200,7 @@ func TestSiatCompraVentaService_RecepcionMasivaFactura(t *testing.T) {
 			WithDireccion("ESQUINA AVENIDA LA PAZ").
 			WithCodigoPuntoVenta(0).
 			WithFechaEmision(fechaEmision).
-			WithNombreRazonSocial("JUAN PEREZ").
+			WithNombreRazonSocial(new("JUAN PEREZ")).
 			WithCodigoTipoDocumentoIdentidad(1).
 			WithNumeroDocumento("5115889").
 			WithCodigoCliente(strconv.Itoa(i)).
@@ -389,7 +389,7 @@ func TestSiatCompraVentaService_RecepcionPaqueteFactura(t *testing.T) {
 			WithDireccion("ESQUINA AVENIDA LA PAZ").
 			WithCodigoPuntoVenta(0).
 			WithFechaEmision(fechaEmision).
-			WithNombreRazonSocial("JUAN PEREZ").
+			WithNombreRazonSocial(new("JUAN PEREZ")).
 			WithCodigoTipoDocumentoIdentidad(1).
 			WithNumeroDocumento("5115889").
 			WithCodigoCliente(strconv.Itoa(i)).
@@ -655,7 +655,7 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 		WithDireccion("ESQUINA AVENIDA LA PAZ").
 		WithCodigoPuntoVenta(0).
 		WithFechaEmision(fechaEmision).
-		WithNombreRazonSocial("JUAN PEREZ").
+		WithNombreRazonSocial(new("JUAN PEREZ")).
 		WithCodigoTipoDocumentoIdentidad(1).
 		WithNumeroDocumento("5115889").
 		WithCodigoCliente("1").

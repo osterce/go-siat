@@ -111,8 +111,16 @@ func (b *FacturaCompraVentaCabeceraBuilder) WithMunicipio(municipio string) *Fac
 }
 
 // WithTelefono configura el número de teléfono (opcional).
-func (b *FacturaCompraVentaCabeceraBuilder) WithTelefono(telefono string) *FacturaCompraVentaCabeceraBuilder {
-	b.cabecera.Telefono = datatype.Nilable[string]{Value: &telefono}
+func (b *FacturaCompraVentaCabeceraBuilder) WithTelefono(telefono *string) *FacturaCompraVentaCabeceraBuilder {
+	if telefono == nil {
+		b.cabecera.Telefono = datatype.Nilable[string]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *telefono
+	b.cabecera.Telefono = datatype.Nilable[string]{Value: &value}
+
 	return b
 }
 
@@ -159,8 +167,15 @@ func (b *FacturaCompraVentaCabeceraBuilder) WithFechaEmision(fechaEmision time.T
 }
 
 // WithNombreRazonSocial configura el nombre o razón social del cliente (opcional).
-func (b *FacturaCompraVentaCabeceraBuilder) WithNombreRazonSocial(nombreRazonSocial string) *FacturaCompraVentaCabeceraBuilder {
-	b.cabecera.NombreRazonSocial = datatype.Nilable[string]{Value: &nombreRazonSocial}
+func (b *FacturaCompraVentaCabeceraBuilder) WithNombreRazonSocial(nombreRazonSocial *string) *FacturaCompraVentaCabeceraBuilder {
+	if nombreRazonSocial == nil {
+		b.cabecera.NombreRazonSocial = datatype.Nilable[string]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *nombreRazonSocial
+	b.cabecera.NombreRazonSocial = datatype.Nilable[string]{Value: &value}
 	return b
 }
 
@@ -177,8 +192,15 @@ func (b *FacturaCompraVentaCabeceraBuilder) WithNumeroDocumento(numeroDocumento 
 }
 
 // WithComplemento configura el complemento del documento de identidad (opcional).
-func (b *FacturaCompraVentaCabeceraBuilder) WithComplemento(complemento string) *FacturaCompraVentaCabeceraBuilder {
-	b.cabecera.Complemento = datatype.Nilable[string]{Value: &complemento}
+func (b *FacturaCompraVentaCabeceraBuilder) WithComplemento(complemento *string) *FacturaCompraVentaCabeceraBuilder {
+	if complemento == nil {
+		b.cabecera.Complemento = datatype.Nilable[string]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *complemento
+	b.cabecera.Complemento = datatype.Nilable[string]{Value: &value}
 	return b
 }
 
@@ -195,8 +217,15 @@ func (b *FacturaCompraVentaCabeceraBuilder) WithCodigoMetodoPago(codigoMetodoPag
 }
 
 // WithNumeroTarjeta configura los primeros y últimos dígitos de la tarjeta (opcional, enmascarado).
-func (b *FacturaCompraVentaCabeceraBuilder) WithNumeroTarjeta(numeroTarjeta int64) *FacturaCompraVentaCabeceraBuilder {
-	b.cabecera.NumeroTarjeta = datatype.Nilable[int64]{Value: &numeroTarjeta}
+func (b *FacturaCompraVentaCabeceraBuilder) WithNumeroTarjeta(numeroTarjeta *int64) *FacturaCompraVentaCabeceraBuilder {
+	if numeroTarjeta == nil {
+		b.cabecera.NumeroTarjeta = datatype.Nilable[int64]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *numeroTarjeta
+	b.cabecera.NumeroTarjeta = datatype.Nilable[int64]{Value: &value}
 	return b
 }
 
@@ -239,30 +268,58 @@ func (b *FacturaCompraVentaCabeceraBuilder) WithMontoTotalMoneda(montoTotalMoned
 }
 
 // WithMontoGiftCard configura el monto pagado con tarjeta de regalo o prepago (opcional, redondeado).
-func (b *FacturaCompraVentaCabeceraBuilder) WithMontoGiftCard(montoGiftCard float64) *FacturaCompraVentaCabeceraBuilder {
+func (b *FacturaCompraVentaCabeceraBuilder) WithMontoGiftCard(montoGiftCard *float64) *FacturaCompraVentaCabeceraBuilder {
+	if montoGiftCard == nil {
+		b.cabecera.MontoGiftCard = datatype.Nilable[float64]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *montoGiftCard
 	// Asegurar que el valor sea redondeado a 2 decimales
-	montoGiftCard, _ = strconv.ParseFloat(strconv.FormatFloat(montoGiftCard, 'f', 2, 64), 64)
-	b.cabecera.MontoGiftCard = datatype.Nilable[float64]{Value: &montoGiftCard}
+	value, _ = strconv.ParseFloat(strconv.FormatFloat(value, 'f', 2, 64), 64)
+	b.cabecera.MontoGiftCard = datatype.Nilable[float64]{Value: &value}
 	return b
 }
 
 // WithDescuentoAdicional configura un descuento global aplicado a toda la factura (opcional, redondeado).
-func (b *FacturaCompraVentaCabeceraBuilder) WithDescuentoAdicional(descuentoAdicional float64) *FacturaCompraVentaCabeceraBuilder {
+func (b *FacturaCompraVentaCabeceraBuilder) WithDescuentoAdicional(descuentoAdicional *float64) *FacturaCompraVentaCabeceraBuilder {
+	if descuentoAdicional == nil {
+		b.cabecera.DescuentoAdicional = datatype.Nilable[float64]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *descuentoAdicional
 	// Asegurar que el valor sea redondeado a 2 decimales
-	descuentoAdicional, _ = strconv.ParseFloat(strconv.FormatFloat(descuentoAdicional, 'f', 2, 64), 64)
-	b.cabecera.DescuentoAdicional = datatype.Nilable[float64]{Value: &descuentoAdicional}
+	value, _ = strconv.ParseFloat(strconv.FormatFloat(value, 'f', 2, 64), 64)
+	b.cabecera.DescuentoAdicional = datatype.Nilable[float64]{Value: &value}
 	return b
 }
 
 // WithCodigoExcepcion configura un código de excepción si los datos del cliente son inválidos pero autorizados (opcional).
-func (b *FacturaCompraVentaCabeceraBuilder) WithCodigoExcepcion(codigoExcepcion int64) *FacturaCompraVentaCabeceraBuilder {
-	b.cabecera.CodigoExcepcion = datatype.Nilable[int64]{Value: &codigoExcepcion}
+func (b *FacturaCompraVentaCabeceraBuilder) WithCodigoExcepcion(codigoExcepcion *int64) *FacturaCompraVentaCabeceraBuilder {
+	if codigoExcepcion == nil {
+		b.cabecera.CodigoExcepcion = datatype.Nilable[int64]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *codigoExcepcion
+	b.cabecera.CodigoExcepcion = datatype.Nilable[int64]{Value: &value}
 	return b
 }
 
 // WithCafc configura el Código de Autorización de Facturas por Contingencia (opcional).
-func (b *FacturaCompraVentaCabeceraBuilder) WithCafc(cafc string) *FacturaCompraVentaCabeceraBuilder {
-	b.cabecera.Cafc = datatype.Nilable[string]{Value: &cafc}
+func (b *FacturaCompraVentaCabeceraBuilder) WithCafc(cafc *string) *FacturaCompraVentaCabeceraBuilder {
+	if cafc == nil {
+		b.cabecera.Cafc = datatype.Nilable[string]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *cafc
+	b.cabecera.Cafc = datatype.Nilable[string]{Value: &value}
 	return b
 }
 
@@ -341,10 +398,17 @@ func (b *DetalleBuilder) WithPrecioUnitario(precioUnitario float64) *DetalleBuil
 }
 
 // WithMontoDescuento configura un descuento aplicado específicamente a este ítem (opcional, redondeado).
-func (b *DetalleBuilder) WithMontoDescuento(montoDescuento float64) *DetalleBuilder {
+func (b *DetalleBuilder) WithMontoDescuento(montoDescuento *float64) *DetalleBuilder {
+	if montoDescuento == nil {
+		b.detalle.MontoDescuento = datatype.Nilable[float64]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *montoDescuento
 	// Asegurar que el valor sea redondeado a 2 decimales
-	montoDescuento, _ = strconv.ParseFloat(strconv.FormatFloat(montoDescuento, 'f', 2, 64), 64)
-	b.detalle.MontoDescuento = datatype.Nilable[float64]{Value: &montoDescuento}
+	value, _ = strconv.ParseFloat(strconv.FormatFloat(value, 'f', 2, 64), 64)
+	b.detalle.MontoDescuento = datatype.Nilable[float64]{Value: &value}
 	return b
 }
 
@@ -357,14 +421,28 @@ func (b *DetalleBuilder) WithSubTotal(subTotal float64) *DetalleBuilder {
 }
 
 // WithNumeroSerie configura el número de serie del producto (opcional).
-func (b *DetalleBuilder) WithNumeroSerie(numeroSerie string) *DetalleBuilder {
-	b.detalle.NumeroSerie = datatype.Nilable[string]{Value: &numeroSerie}
+func (b *DetalleBuilder) WithNumeroSerie(numeroSerie *string) *DetalleBuilder {
+	if numeroSerie == nil {
+		b.detalle.NumeroSerie = datatype.Nilable[string]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *numeroSerie
+	b.detalle.NumeroSerie = datatype.Nilable[string]{Value: &value}
 	return b
 }
 
 // WithNumeroImei configura el número IMEI si se trata de equipos telefónicos (opcional).
-func (b *DetalleBuilder) WithNumeroImei(numeroImei string) *DetalleBuilder {
-	b.detalle.NumeroImei = datatype.Nilable[string]{Value: &numeroImei}
+func (b *DetalleBuilder) WithNumeroImei(numeroImei *string) *DetalleBuilder {
+	if numeroImei == nil {
+		b.detalle.NumeroImei = datatype.Nilable[string]{Value: nil}
+		return b
+	}
+
+	// Creamos una copia física del valor en una nueva dirección de memoria
+	value := *numeroImei
+	b.detalle.NumeroImei = datatype.Nilable[string]{Value: &value}
 	return b
 }
 
