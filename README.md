@@ -71,7 +71,7 @@ func main() {
     }
 
     // 2. Usar un Builder para crear una solicitud
-    req := models.Codigos.NewCuisBuilder().
+    req := models.Codigos().NewCuisBuilder().
 		WithCodigoAmbiente(1).
 		WithCodigoModalidad(1).
 		WithCodigoPuntoVenta(0).
