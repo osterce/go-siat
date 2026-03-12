@@ -186,6 +186,7 @@ func TestSiatCompraVentaService_RecepcionMasivaFactura(t *testing.T) {
 	tw := tar.NewWriter(&tarBuf)
 	fechaEmision := time.Now()
 	for i := 1; i <= 5; i++ {
+		nombreRazonSocial := "JUAN PEREZ"
 		// Para masiva debe ser emisión Masiva (3)
 		cuf, _ := utils.GenerarCUF(nit, fechaEmision, 0, codModalidad, facturas.EmisionMasiva, 1, 1, i, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
 		log.Printf("CUF #%d: %s", i, cuf)
@@ -200,7 +201,7 @@ func TestSiatCompraVentaService_RecepcionMasivaFactura(t *testing.T) {
 			WithDireccion("ESQUINA AVENIDA LA PAZ").
 			WithCodigoPuntoVenta(0).
 			WithFechaEmision(fechaEmision).
-			WithNombreRazonSocial(new("JUAN PEREZ")).
+			WithNombreRazonSocial(&nombreRazonSocial).
 			WithCodigoTipoDocumentoIdentidad(1).
 			WithNumeroDocumento("5115889").
 			WithCodigoCliente(strconv.Itoa(i)).
@@ -377,7 +378,7 @@ func TestSiatCompraVentaService_RecepcionPaqueteFactura(t *testing.T) {
 	for i := 1; i <= 5; i++ {
 		fechaEmision := time.Now()
 		cuf, _ := utils.GenerarCUF(nit, fechaEmision, 0, codModalidad, facturas.EmisionOffline, 1, 1, i, 0, cufd.Body.Content.RespuestaCufd.CodigoControl)
-
+		nombreRazonSocial := "JUAN PEREZ"
 		cabecera := facturas.NewFacturaCompraVentaCabeceraBuilder().
 			WithNitEmisor(nit).
 			WithRazonSocialEmisor("Ronaldo Rua").
@@ -389,7 +390,7 @@ func TestSiatCompraVentaService_RecepcionPaqueteFactura(t *testing.T) {
 			WithDireccion("ESQUINA AVENIDA LA PAZ").
 			WithCodigoPuntoVenta(0).
 			WithFechaEmision(fechaEmision).
-			WithNombreRazonSocial(new("JUAN PEREZ")).
+			WithNombreRazonSocial(&nombreRazonSocial).
 			WithCodigoTipoDocumentoIdentidad(1).
 			WithNumeroDocumento("5115889").
 			WithCodigoCliente(strconv.Itoa(i)).
@@ -643,6 +644,7 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 		t.Fatalf("error al generar CUF: %v", err)
 	}
 
+	nombreRazonSocial := "JUAN PEREZ"
 	// Crear objeto de factura usando el nuevo paquete facturas
 	cabecera := facturas.NewFacturaCompraVentaCabeceraBuilder().
 		WithNitEmisor(nit).
@@ -655,7 +657,7 @@ func TestSiatCompraVentaService_RecepcionFactura(t *testing.T) {
 		WithDireccion("ESQUINA AVENIDA LA PAZ").
 		WithCodigoPuntoVenta(0).
 		WithFechaEmision(fechaEmision).
-		WithNombreRazonSocial(new("JUAN PEREZ")).
+		WithNombreRazonSocial(&nombreRazonSocial).
 		WithCodigoTipoDocumentoIdentidad(1).
 		WithNumeroDocumento("5115889").
 		WithCodigoCliente("1").

@@ -1,6 +1,6 @@
 module github.com/ron86i/go-siat
 
-go 1.26.0
+go 1.23.0
 
 require (
 	github.com/beevik/etree v1.6.0
