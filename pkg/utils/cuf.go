@@ -3,13 +3,12 @@ package utils
 import (
 	"fmt"
 	"math/big"
-	"strconv"
 	"strings"
 	"time"
 )
 
 // GenerarCUF genera el CUF completo para una factura
-func GenerarCUF(nit int64, fechaHora time.Time, sucursal int, modalidad, tipoEmision, tipoFactura int, tipoDocumentoSector int, numeroFactura int, puntoVenta int, codigoControl string) (string, error) {
+func GenerarCUF(nit int64, fechaHora time.Time, sucursal, modalidad, tipoEmision, tipoFactura, tipoDocumentoSector, numeroFactura, puntoVenta int, codigoControl string) (string, error) {
 
 	// 1. Formatear campos a longitud fija
 	nitStr := fmt.Sprintf("%013d", nit)                                // 13
@@ -33,7 +32,9 @@ func GenerarCUF(nit int64, fechaHora time.Time, sucursal int, modalidad, tipoEmi
 
 	// 4. Convertir a Base16 (hexadecimal como número, no ASCII)
 	bigInt := new(big.Int)
-	bigInt.SetString(cadena, 10)
+	if _, ok := bigInt.SetString(cadena, 10); !ok {
+		return "", fmt.Errorf("error converting to BigInt")
+	}
 	cadenaHex := strings.ToUpper(bigInt.Text(16))
 
 	// 5. Concatenar código de control (CUFD)
@@ -52,7 +53,7 @@ func calculaDigitoMod11(cadena string, numDig, limMult int, x10 bool) string {
 		suma = 0
 		mult = 2
 		for i := len(cadena) - 1; i >= 0; i-- {
-			num, _ := strconv.Atoi(string(cadena[i]))
+			num := int(cadena[i] - '0')
 			suma += mult * num
 			mult++
 			if mult > limMult {

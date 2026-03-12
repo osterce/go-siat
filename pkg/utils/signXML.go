@@ -22,26 +22,21 @@ func (ks *pemKeyStore) GetKeyPair() (*rsa.PrivateKey, []byte, error) {
 	return ks.PrivateKey, ks.Cert, nil
 }
 
-// SignXML firma un documento XML utilizando firma envuelta (enveloped) siguiendo el estándar XMLDSig.
-// Utiliza las librerías goxmldsig y etree para garantizar una canonicalización (C14N) correcta.
-func SignXML(xmlBytes []byte, keyPath, certPath string) ([]byte, error) {
-	// 1. Cargar clave privada
-	privKey, err := loadRSAPrivateKey(keyPath)
+// SignXMLBytes firma un documento XML recibiendo los certificados y la llave directamente en bytes.
+func SignXMLBytes(xmlBytes, keyBytes, certBytes []byte) ([]byte, error) {
+	// 1. Parsear clave privada desde los bytes proporcionados
+	privKey, err := parseRSAPrivateKey(keyBytes)
 	if err != nil {
 		return nil, err
 	}
 
-	// 2. Cargar certificado
-	certData, err := os.ReadFile(certPath)
-	if err != nil {
-		return nil, fmt.Errorf("error leyendo certificado: %w", err)
-	}
-	blockCert, _ := pem.Decode(certData)
+	// 2. Decodificar certificado PEM
+	blockCert, _ := pem.Decode(certBytes)
 	if blockCert == nil {
-		return nil, fmt.Errorf("error decodificando certificado PEM")
+		return nil, fmt.Errorf("error decoding PEM certificate")
 	}
 
-	// 3. Configurar KeyStore
+	// 3. Configure KeyStore
 	ks := &pemKeyStore{
 		PrivateKey: privKey,
 		Cert:       blockCert.Bytes,
@@ -55,13 +50,13 @@ func SignXML(xmlBytes []byte, keyPath, certPath string) ([]byte, error) {
 	// 5. Parsear XML
 	doc := etree.NewDocument()
 	if err := doc.ReadFromBytes(xmlBytes); err != nil {
-		return nil, fmt.Errorf("error leyendo XML: %w", err)
+		return nil, err
 	}
 
 	// 6. Firmar XML (Enveloped Signature)
 	signedElement, err := ctx.SignEnveloped(doc.Root())
 	if err != nil {
-		return nil, fmt.Errorf("error firmando XML: %w", err)
+		return nil, err
 	}
 
 	signedDoc := etree.NewDocument()
@@ -70,37 +65,48 @@ func SignXML(xmlBytes []byte, keyPath, certPath string) ([]byte, error) {
 	// 7. Renderizar a bytes
 	var buf bytes.Buffer
 	if _, err := signedDoc.WriteTo(&buf); err != nil {
-		return nil, fmt.Errorf("error convirtiendo XML firmado a bytes: %w", err)
+		return nil, err
 	}
 
 	return buf.Bytes(), nil
 }
 
-// loadRSAPrivateKey carga una clave privada RSA desde un archivo PEM, soportando PKCS#1 y PKCS#8.
-func loadRSAPrivateKey(path string) (*rsa.PrivateKey, error) {
-	data, err := os.ReadFile(path)
+// SignXML firma un documento XML recibiendo los certificados y la llave desde archivos.
+func SignXML(xmlBytes []byte, keyPath, certPath string) ([]byte, error) {
+	keyData, err := os.ReadFile(keyPath)
 	if err != nil {
-		return nil, fmt.Errorf("error leyendo clave privada: %w", err)
-	}
-	block, _ := pem.Decode(data)
-	if block == nil {
-		return nil, fmt.Errorf("formato PEM inválido en llave privada")
+		return nil, err
 	}
 
-	// Intentar parsear como PKCS#1 (RSA Private Key)
+	certData, err := os.ReadFile(certPath)
+	if err != nil {
+		return nil, err
+	}
+
+	return SignXMLBytes(xmlBytes, keyData, certData)
+}
+
+// parseRSAPrivateKey procesa los bytes de una clave PEM (PKCS#1 o PKCS#8).
+func parseRSAPrivateKey(keyData []byte) (*rsa.PrivateKey, error) {
+	block, _ := pem.Decode(keyData)
+	if block == nil {
+		return nil, fmt.Errorf("invalid PEM format in private key")
+	}
+
+	// Intentar parsear como PKCS#1
 	if key, err := x509.ParsePKCS1PrivateKey(block.Bytes); err == nil {
 		return key, nil
 	}
 
-	// Intentar parsear como PKCS#8 (un-encrypted)
+	// Intentar parsear como PKCS#8
 	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
 	if err != nil {
-		return nil, fmt.Errorf("error parseando clave privada (identificada como PKCS#8): %w", err)
+		return nil, err
 	}
 
 	rsaKey, ok := key.(*rsa.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("la clave privada cargada no es de tipo RSA")
+		return nil, fmt.Errorf("loaded private key is not of type RSA")
 	}
 
 	return rsaKey, nil

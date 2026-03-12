@@ -10,9 +10,13 @@ import (
 // Retorna un error descriptivo si la conversión falla.
 func ParseIntSafe(valStr string) (int, error) {
 	cleanVal := strings.TrimSpace(valStr)
+	if cleanVal == "" {
+		return 0, fmt.Errorf("value is empty, expected a number")
+	}
+
 	val, err := strconv.Atoi(cleanVal)
 	if err != nil {
-		return 0, fmt.Errorf("la variable debe ser un número entero válido: %w", err)
+		return 0, err
 	}
 	return val, nil
 }
@@ -21,9 +25,13 @@ func ParseIntSafe(valStr string) (int, error) {
 // Retorna un error descriptivo si la conversión falla.
 func ParseInt64Safe(valStr string) (int64, error) {
 	cleanVal := strings.TrimSpace(valStr)
+	if cleanVal == "" {
+		return 0, fmt.Errorf("value is empty, expected a number")
+	}
+
 	val, err := strconv.ParseInt(cleanVal, 10, 64)
 	if err != nil {
-		return 0, fmt.Errorf("la variable debe ser un número (int64) válido: %w", err)
+		return 0, err
 	}
 	return val, nil
 }
