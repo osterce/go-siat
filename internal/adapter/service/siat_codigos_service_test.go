@@ -41,7 +41,7 @@ func TestNotificaCertificadoRevocado(t *testing.T) {
 
 	siatClient, _ := siat.New(os.Getenv("SIAT_URL"), nil)
 	service := siatClient.Codigos()
-
+	fechaRevocacion := time.Now()
 	// Preparar la solicitud de notificación. Se requiere un certificado y una razón válida.
 	req := models.Codigos().NewNotificaCertificadoRevocadoBuilder().
 		WithCodigoAmbiente(codAmbiente).
@@ -49,7 +49,7 @@ func TestNotificaCertificadoRevocado(t *testing.T) {
 		WithNit(nit).
 		WithCodigoSucursal(0).
 		WithCuis("197C8240").
-		WithFechaRevocacion(new(time.Now())).
+		WithFechaRevocacion(&fechaRevocacion).
 		WithRazonRevocacion("Prueba de revocación por sistema").
 		WithCertificado(`-----BEGIN CERTIFICATE-----
 MIIEejCCA2KgA...alF2Tw0jIVieaeefsL78Yv8fA==
