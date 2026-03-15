@@ -19,7 +19,7 @@ import (
 
 type SiatOperacionesService struct {
 	url        string
-	HttpClient *http.Client
+	httpClient *http.Client
 }
 
 // ConsultaPuntoVenta implements [port.SiatOperacionesPort].
@@ -37,7 +37,7 @@ func (s *SiatOperacionesService) ConsultaPuntoVenta(ctx context.Context, config 
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error al hacer request HTTP: %w", err)
 	}
@@ -60,7 +60,7 @@ func (s *SiatOperacionesService) CierreOperacionesSistema(ctx context.Context, c
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error al hacer request HTTP: %w", err)
 	}
@@ -84,7 +84,7 @@ func (s *SiatOperacionesService) CierrePuntoVenta(ctx context.Context, config co
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error al hacer request HTTP: %w", err)
 	}
@@ -107,7 +107,7 @@ func (s *SiatOperacionesService) ConsultaEventosSignificativos(ctx context.Conte
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error al hacer request HTTP: %w", err)
 	}
@@ -130,7 +130,7 @@ func (s *SiatOperacionesService) RegistroEventosSignificativos(ctx context.Conte
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,7 @@ func (s *SiatOperacionesService) VerificarComunicacion(ctx context.Context, conf
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -177,7 +177,7 @@ func (s *SiatOperacionesService) RegistroPuntoVenta(ctx context.Context, config 
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -202,14 +202,14 @@ func (s *SiatOperacionesService) RegistroPuntoVentaComisionista(ctx context.Cont
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
 	return parseSoapResponse[operaciones.RegistroPuntoVentaComisionistaResponse](resp)
 }
 
-func NewSiatOperacionesService(baseUrl string, httpClient *http.Client) (*SiatOperacionesService, error) {
+func NewSiatOperacionesService(baseUrl string, httpClient *http.Client) (port.SiatOperacionesPort, error) {
 	baseUrl = strings.TrimSpace(baseUrl)
 	if baseUrl == "" {
 		return nil, fmt.Errorf("baseUrl is empty")
@@ -223,8 +223,6 @@ func NewSiatOperacionesService(baseUrl string, httpClient *http.Client) (*SiatOp
 
 	return &SiatOperacionesService{
 		url:        fullURL(baseUrl, SiatOperaciones),
-		HttpClient: httpClient,
+		httpClient: httpClient,
 	}, nil
 }
-
-var _ port.SiatOperacionesPort = (*SiatOperacionesService)(nil)

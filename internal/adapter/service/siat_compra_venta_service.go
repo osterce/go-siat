@@ -21,7 +21,7 @@ import (
 // con los servicios de recepción y anulación de facturas del SIAT.
 type SiatCompraVentaService struct {
 	url        string
-	HttpClient *http.Client
+	httpClient *http.Client
 }
 
 // RecepcionAnexos
@@ -40,7 +40,7 @@ func (s *SiatCompraVentaService) RecepcionAnexos(ctx context.Context, config con
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (s *SiatCompraVentaService) ValidacionRecepcionMasivaFactura(ctx context.Co
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (s *SiatCompraVentaService) VerificacionEstadoFactura(ctx context.Context, 
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (s *SiatCompraVentaService) RecepcionMasivaFactura(ctx context.Context, con
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +137,7 @@ func (s *SiatCompraVentaService) VerificarComunicacion(ctx context.Context, conf
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +161,7 @@ func (s *SiatCompraVentaService) ValidacionRecepcionPaqueteFactura(ctx context.C
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func (s *SiatCompraVentaService) RecepcionPaqueteFactura(ctx context.Context, co
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -213,7 +213,7 @@ func (s *SiatCompraVentaService) ReversionAnulacionFactura(ctx context.Context, 
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -237,7 +237,7 @@ func (s *SiatCompraVentaService) AnulacionFactura(ctx context.Context, config co
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -262,7 +262,7 @@ func (s *SiatCompraVentaService) RecepcionFactura(ctx context.Context, config co
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +271,7 @@ func (s *SiatCompraVentaService) RecepcionFactura(ctx context.Context, config co
 
 // NewSiatCompraVentaService crea una nueva instancia del servicio de Compra y Venta.
 // Inicializa la URL específica del servicio basándose en la baseUrl proporcionada.
-func NewSiatCompraVentaService(baseUrl string, httpClient *http.Client) (*SiatCompraVentaService, error) {
+func NewSiatCompraVentaService(baseUrl string, httpClient *http.Client) (port.SiatCompraVentaService, error) {
 	baseUrl = strings.TrimSpace(baseUrl)
 	if baseUrl == "" {
 		return nil, fmt.Errorf("baseUrl is empty")
@@ -285,8 +285,6 @@ func NewSiatCompraVentaService(baseUrl string, httpClient *http.Client) (*SiatCo
 	}
 	return &SiatCompraVentaService{
 		url:        fullURL(baseUrl, SiatCompraVenta),
-		HttpClient: httpClient,
+		httpClient: httpClient,
 	}, nil
 }
-
-var _ port.SiatCompraVentaService = (*SiatCompraVentaService)(nil)

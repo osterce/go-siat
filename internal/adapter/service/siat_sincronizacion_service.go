@@ -18,7 +18,7 @@ import (
 
 type SiatSincronizacionService struct {
 	url        string
-	HttpClient *http.Client
+	httpClient *http.Client
 }
 
 func (s *SiatSincronizacionService) SincronizarActividades(ctx context.Context, config config.Config, req models.SincronizarActividades) (*soap.EnvelopeResponse[sincronizacion.SincronizarActividadesResponse], error) {
@@ -103,7 +103,7 @@ func (s *SiatSincronizacionService) VerificarComunicacion(ctx context.Context, c
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func executeSincronizacion[V any, K any](s *SiatSincronizacionService, ctx conte
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func executeSincronizacion[V any, K any](s *SiatSincronizacionService, ctx conte
 }
 
 // NewSiatSincronizacionService crea una nueva instancia del servicio SiatSincronizacionService.
-func NewSiatSincronizacionService(baseUrl string, httpClient *http.Client) (*SiatSincronizacionService, error) {
+func NewSiatSincronizacionService(baseUrl string, httpClient *http.Client) (port.SiatSincronizacionCatalogoService, error) {
 	baseUrl = strings.TrimSpace(baseUrl)
 	if baseUrl == "" {
 		return nil, fmt.Errorf("baseUrl is empty")
@@ -153,8 +153,6 @@ func NewSiatSincronizacionService(baseUrl string, httpClient *http.Client) (*Sia
 
 	return &SiatSincronizacionService{
 		url:        fullURL(baseUrl, SiatSincronizacion),
-		HttpClient: httpClient,
+		httpClient: httpClient,
 	}, nil
 }
-
-var _ port.SiatSincronizacionCatalogoService = (*SiatSincronizacionService)(nil)
