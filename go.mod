@@ -1,12 +1,13 @@
 module github.com/ron86i/go-siat
 
-go 1.23.0
+go 1.25.0
 
 require (
 	github.com/beevik/etree v1.6.0
 	github.com/joho/godotenv v1.5.1
 	github.com/russellhaering/goxmldsig v1.5.0
 	github.com/stretchr/testify v1.11.1
+	golang.org/x/crypto v0.49.0
 )
 
 require (

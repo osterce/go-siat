@@ -5,7 +5,7 @@
     <img src="https://img.shields.io/badge/status-active-success?style=flat-square" alt="Status">
   </a>
   <a href="https://go.dev/">
-    <img src="https://img.shields.io/badge/go-1.23+-00ADD8?style=flat-square" alt="Go Version">
+    <img src="https://img.shields.io/badge/go-1.25+-00ADD8?style=flat-square" alt="Go Version">
   </a>
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License">
