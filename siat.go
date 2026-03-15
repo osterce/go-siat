@@ -43,10 +43,11 @@ func (s *SiatServices) CompraVenta() port.SiatCompraVentaService {
 // Requiere la URL base del servicio (Pruebas o Producción) y un cliente HTTP opcional.
 // Si httpClient es nil, se utilizará uno por defecto con un tiempo de espera (timeout) de 15 segundos.
 func New(baseUrl string, httpClient *http.Client) (*SiatServices, error) {
-	if httpClient == nil {
-		httpClient = &http.Client{
-			Timeout: 15 * time.Second,
-		}
+	if httpClient != nil {
+		clonedClient := *httpClient
+		httpClient = &clonedClient
+	} else {
+		httpClient = &http.Client{Timeout: 15 * time.Second}
 	}
 
 	baseUrl = strings.TrimSpace(baseUrl)
@@ -70,6 +71,7 @@ func New(baseUrl string, httpClient *http.Client) (*SiatServices, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &SiatServices{
 		operaciones:    operaciones,
 		sincronizacion: sincronizacion,

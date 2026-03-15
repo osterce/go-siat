@@ -21,7 +21,7 @@ import (
 // Esta estructura utiliza un cliente HTTP personalizado para realizar peticiones SOAP a los endpoints de impuestos.
 type SiatCodigosService struct {
 	url        string
-	HttpClient *http.Client
+	httpClient *http.Client
 }
 
 // VerificarComunicacion realiza una prueba de conectividad con el servicio de códigos del SIAT.
@@ -42,7 +42,7 @@ func (s *SiatCodigosService) VerificarComunicacion(ctx context.Context, config c
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (s *SiatCodigosService) NotificaCertificadoRevocado(ctx context.Context, co
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (s *SiatCodigosService) SolicitudCufd(ctx context.Context, config config.Co
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (s *SiatCodigosService) SolicitudCufdMasivo(ctx context.Context, config con
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (s *SiatCodigosService) SolicitudCuis(ctx context.Context, config config.Co
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func (s *SiatCodigosService) SolicitudCuisMasivo(ctx context.Context, config con
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +195,7 @@ func (s *SiatCodigosService) VerificarNit(ctx context.Context, config config.Con
 	httpReq.Header.Set("Content-Type", "application/xml")
 	httpReq.Header.Set("apiKey", fmt.Sprintf("TokenApi %s", config.Token))
 
-	resp, err := s.HttpClient.Do(httpReq)
+	resp, err := s.httpClient.Do(httpReq)
 	if err != nil {
 		return nil, err
 	}
@@ -205,7 +205,7 @@ func (s *SiatCodigosService) VerificarNit(ctx context.Context, config config.Con
 }
 
 // NewSiatCodigosService crea una nueva instancia del servicio SiatCodigosService.
-func NewSiatCodigosService(baseUrl string, httpClient *http.Client) (*SiatCodigosService, error) {
+func NewSiatCodigosService(baseUrl string, httpClient *http.Client) (port.SiatCodigosService, error) {
 	baseUrl = strings.TrimSpace(baseUrl)
 	if baseUrl == "" {
 		return nil, fmt.Errorf("baseUrl is empty")
@@ -220,8 +220,6 @@ func NewSiatCodigosService(baseUrl string, httpClient *http.Client) (*SiatCodigo
 
 	return &SiatCodigosService{
 		url:        fullURL(baseUrl, SiatCodigos),
-		HttpClient: httpClient,
+		httpClient: httpClient,
 	}, nil
 }
-
-var _ port.SiatCodigosService = (*SiatCodigosService)(nil)
