@@ -12,15 +12,15 @@ import (
 // FacturaCompraVentaBonificaciones representa una factura de compra-venta con bonificaciones lista para procesar.
 type FacturaCompraVentaBonificaciones interface{}
 
-// FacturaCompraVentaBonCabecera representa la cabecera de una factura de bonificaciones.
-type FacturaCompraVentaBonCabecera interface{}
+// FacturaCompraVentaBonificacionesCabecera representa la cabecera de una factura de bonificaciones.
+type FacturaCompraVentaBonificacionesCabecera interface{}
 
-// FacturaCompraVentaBonDetalle representa un ítem de detalle de una factura de bonificaciones.
-type FacturaCompraVentaBonDetalle interface{}
+// FacturaCompraVentaBonificacionesDetalle representa un ítem de detalle de una factura de bonificaciones.
+type FacturaCompraVentaBonificacionesDetalle interface{}
 
-// NewFacturaCompraVentaBonBuilder inicia la construcción de una factura de compra-venta con bonificaciones.
-func NewFacturaCompraVentaBonBuilder() *FacturaCompraVentaBonBuilder {
-	return &FacturaCompraVentaBonBuilder{
+// NewFacturaCompraVentaBonificacionesBuilder inicia la construcción de una factura de compra-venta con bonificaciones.
+func NewFacturaCompraVentaBonificacionesBuilder() *FacturaCompraVentaBonificacionesBuilder {
+	return &FacturaCompraVentaBonificacionesBuilder{
 		factura: &documentos.FacturaCompraVentaBonificaciones{
 			XMLName:           xml.Name{Local: "facturaElectronicaCompraVentaBon"},
 			XmlnsXsi:          "http://www.w3.org/2001/XMLSchema-instance",
@@ -29,15 +29,15 @@ func NewFacturaCompraVentaBonBuilder() *FacturaCompraVentaBonBuilder {
 	}
 }
 
-// NewFacturaCompraVentaBonCabeceraBuilder crea el constructor de la cabecera de bonificaciones.
-func NewFacturaCompraVentaBonCabeceraBuilder() *FacturaCompraVentaBonCabeceraBuilder {
-	return &FacturaCompraVentaBonCabeceraBuilder{
+// NewFacturaCompraVentaBonificacionesCabeceraBuilder crea el constructor de la cabecera de bonificaciones.
+func NewFacturaCompraVentaBonificacionesCabeceraBuilder() *FacturaCompraVentaBonificacionesCabeceraBuilder {
+	return &FacturaCompraVentaBonificacionesCabeceraBuilder{
 		cabecera: &documentos.CabeceraCompraVentaBonificaciones{},
 	}
 }
 
-// NewFacturaCompraVentaBonDetalleBuilder crea el constructor del detalle de bonificaciones.
-func NewFacturaCompraVentaBonDetalleBuilder() *DetalleBonificacionesBuilder {
+// NewFacturaCompraVentaBonificacionesDetalleBuilder crea el constructor del detalle de bonificaciones.
+func NewFacturaCompraVentaBonificacionesDetalleBuilder() *DetalleBonificacionesBuilder {
 	return &DetalleBonificacionesBuilder{
 		detalle: &documentos.DetalleCompraVentaBonificaciones{},
 	}
@@ -45,12 +45,12 @@ func NewFacturaCompraVentaBonDetalleBuilder() *DetalleBonificacionesBuilder {
 
 // --- Builder Factura Bonificaciones ---
 
-type FacturaCompraVentaBonBuilder struct {
+type FacturaCompraVentaBonificacionesBuilder struct {
 	factura *documentos.FacturaCompraVentaBonificaciones
 }
 
 // WithModalidad configura los metadatos XML según la modalidad.
-func (b *FacturaCompraVentaBonBuilder) WithModalidad(tipo int) *FacturaCompraVentaBonBuilder {
+func (b *FacturaCompraVentaBonificacionesBuilder) WithModalidad(tipo int) *FacturaCompraVentaBonificacionesBuilder {
 	switch tipo {
 	case ModalidadElectronica:
 		b.factura.XMLName = xml.Name{Local: "facturaElectronicaCompraVentaBon"}
@@ -62,43 +62,43 @@ func (b *FacturaCompraVentaBonBuilder) WithModalidad(tipo int) *FacturaCompraVen
 	return b
 }
 
-func (b *FacturaCompraVentaBonBuilder) WithCabecera(req FacturaCompraVentaBonCabecera) *FacturaCompraVentaBonBuilder {
+func (b *FacturaCompraVentaBonificacionesBuilder) WithCabecera(req FacturaCompraVentaBonificacionesCabecera) *FacturaCompraVentaBonificacionesBuilder {
 	if c := getInternalRequest[documentos.CabeceraCompraVentaBonificaciones](req); c != nil {
 		b.factura.Cabecera = *c
 	}
 	return b
 }
 
-func (b *FacturaCompraVentaBonBuilder) AddDetalle(req FacturaCompraVentaBonDetalle) *FacturaCompraVentaBonBuilder {
+func (b *FacturaCompraVentaBonificacionesBuilder) AddDetalle(req FacturaCompraVentaBonificacionesDetalle) *FacturaCompraVentaBonificacionesBuilder {
 	if d := getInternalRequest[documentos.DetalleCompraVentaBonificaciones](req); d != nil {
 		b.factura.Detalle = append(b.factura.Detalle, *d)
 	}
 	return b
 }
 
-func (b *FacturaCompraVentaBonBuilder) Build() FacturaCompraVentaBonificaciones {
+func (b *FacturaCompraVentaBonificacionesBuilder) Build() FacturaCompraVentaBonificaciones {
 	return requestWrapper[documentos.FacturaCompraVentaBonificaciones]{request: b.factura}
 }
 
 // --- Builder Cabecera Bonificaciones ---
 
-type FacturaCompraVentaBonCabeceraBuilder struct {
+type FacturaCompraVentaBonificacionesCabeceraBuilder struct {
 	cabecera *documentos.CabeceraCompraVentaBonificaciones
 }
 
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithNitEmisor(v int64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithNitEmisor(v int64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.NitEmisor = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithRazonSocialEmisor(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithRazonSocialEmisor(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.RazonSocialEmisor = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithMunicipio(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithMunicipio(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.Municipio = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithTelefono(v *string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithTelefono(v *string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.Telefono = datatype.Nilable[string]{}
 		return b
@@ -107,29 +107,29 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithTelefono(v *string) *FacturaC
 	b.cabecera.Telefono = datatype.Nilable[string]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithNumeroFactura(v int64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithNumeroFactura(v int64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.NumeroFactura = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCuf(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCuf(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.Cuf = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCufd(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCufd(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.Cufd = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoSucursal(v int) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCodigoSucursal(v int) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.CodigoSucursal = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithDireccion(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithDireccion(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.Direccion = v
 	return b
 }
 
 // WithCodigoPuntoVenta es nillable en bonificaciones; pasar nil para omitir.
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoPuntoVenta(v *int) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCodigoPuntoVenta(v *int) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.CodigoPuntoVenta = datatype.Nilable[int]{}
 		return b
@@ -138,11 +138,11 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoPuntoVenta(v *int) *Fac
 	b.cabecera.CodigoPuntoVenta = datatype.Nilable[int]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithFechaEmision(v time.Time) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithFechaEmision(v time.Time) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.FechaEmision = datatype.NewTimeSiat(v)
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithNombreRazonSocial(v *string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithNombreRazonSocial(v *string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.NombreRazonSocial = datatype.Nilable[string]{}
 		return b
@@ -151,15 +151,15 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithNombreRazonSocial(v *string) 
 	b.cabecera.NombreRazonSocial = datatype.Nilable[string]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoTipoDocumentoIdentidad(v int) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCodigoTipoDocumentoIdentidad(v int) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.CodigoTipoDocumentoIdentidad = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithNumeroDocumento(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithNumeroDocumento(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.NumeroDocumento = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithComplemento(v *string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithComplemento(v *string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.Complemento = datatype.Nilable[string]{}
 		return b
@@ -168,15 +168,15 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithComplemento(v *string) *Factu
 	b.cabecera.Complemento = datatype.Nilable[string]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoCliente(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCodigoCliente(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.CodigoCliente = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoMetodoPago(v int) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCodigoMetodoPago(v int) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.CodigoMetodoPago = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithNumeroTarjeta(v *int64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithNumeroTarjeta(v *int64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.NumeroTarjeta = datatype.Nilable[int64]{}
 		return b
@@ -185,31 +185,31 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithNumeroTarjeta(v *int64) *Fact
 	b.cabecera.NumeroTarjeta = datatype.Nilable[int64]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithMontoTotal(v float64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithMontoTotal(v float64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	v, _ = strconv.ParseFloat(strconv.FormatFloat(v, 'f', 2, 64), 64)
 	b.cabecera.MontoTotal = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithMontoTotalSujetoIva(v float64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithMontoTotalSujetoIva(v float64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	v, _ = strconv.ParseFloat(strconv.FormatFloat(v, 'f', 2, 64), 64)
 	b.cabecera.MontoTotalSujetoIva = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoMoneda(v int) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCodigoMoneda(v int) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.CodigoMoneda = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithTipoCambio(v float64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithTipoCambio(v float64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	v, _ = strconv.ParseFloat(strconv.FormatFloat(v, 'f', 2, 64), 64)
 	b.cabecera.TipoCambio = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithMontoTotalMoneda(v float64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithMontoTotalMoneda(v float64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	v, _ = strconv.ParseFloat(strconv.FormatFloat(v, 'f', 2, 64), 64)
 	b.cabecera.MontoTotalMoneda = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithMontoGiftCard(v *float64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithMontoGiftCard(v *float64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.MontoGiftCard = datatype.Nilable[float64]{}
 		return b
@@ -218,7 +218,7 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithMontoGiftCard(v *float64) *Fa
 	b.cabecera.MontoGiftCard = datatype.Nilable[float64]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithDescuentoAdicional(v *float64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithDescuentoAdicional(v *float64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.DescuentoAdicional = datatype.Nilable[float64]{}
 		return b
@@ -227,7 +227,7 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithDescuentoAdicional(v *float64
 	b.cabecera.DescuentoAdicional = datatype.Nilable[float64]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoExcepcion(v *int64) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCodigoExcepcion(v *int64) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.CodigoExcepcion = datatype.Nilable[int64]{}
 		return b
@@ -236,7 +236,7 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoExcepcion(v *int64) *Fa
 	b.cabecera.CodigoExcepcion = datatype.Nilable[int64]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCafc(v *string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCafc(v *string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	if v == nil {
 		b.cabecera.Cafc = datatype.Nilable[string]{}
 		return b
@@ -245,19 +245,19 @@ func (b *FacturaCompraVentaBonCabeceraBuilder) WithCafc(v *string) *FacturaCompr
 	b.cabecera.Cafc = datatype.Nilable[string]{Value: &cp}
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithLeyenda(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithLeyenda(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.Leyenda = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithUsuario(v string) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithUsuario(v string) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.Usuario = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) WithCodigoDocumentoSector(v int) *FacturaCompraVentaBonCabeceraBuilder {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) WithCodigoDocumentoSector(v int) *FacturaCompraVentaBonificacionesCabeceraBuilder {
 	b.cabecera.CodigoDocumentoSector = v
 	return b
 }
-func (b *FacturaCompraVentaBonCabeceraBuilder) Build() FacturaCompraVentaBonCabecera {
+func (b *FacturaCompraVentaBonificacionesCabeceraBuilder) Build() FacturaCompraVentaBonificacionesCabecera {
 	return requestWrapper[documentos.CabeceraCompraVentaBonificaciones]{request: b.cabecera}
 }
 
@@ -331,8 +331,6 @@ func (b *DetalleBonificacionesBuilder) WithNumeroImei(v *string) *DetalleBonific
 	b.detalle.NumeroImei = datatype.Nilable[string]{Value: &cp}
 	return b
 }
-func (b *DetalleBonificacionesBuilder) Build() FacturaCompraVentaBonDetalle {
+func (b *DetalleBonificacionesBuilder) Build() FacturaCompraVentaBonificacionesDetalle {
 	return requestWrapper[documentos.DetalleCompraVentaBonificaciones]{request: b.detalle}
 }
-
-

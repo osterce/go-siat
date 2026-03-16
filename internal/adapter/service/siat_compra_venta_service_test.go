@@ -982,7 +982,7 @@ func TestSiatCompraVentaService_RecepcionFacturaCompraVentaBonificaciones(t *tes
 	subTotal := precioUnitario - descuentoItem  // 90.00
 	montoTotal := subTotal - descuentoAdicional // 85.00
 
-	cabecera := facturas.NewFacturaCompraVentaBonCabeceraBuilder().
+	cabecera := facturas.NewFacturaCompraVentaBonificacionesCabeceraBuilder().
 		WithNitEmisor(nit).
 		WithRazonSocialEmisor("Ronaldo Rua").
 		WithMunicipio("Tarija").
@@ -1009,7 +1009,7 @@ func TestSiatCompraVentaService_RecepcionFacturaCompraVentaBonificaciones(t *tes
 		WithCodigoDocumentoSector(35).
 		Build()
 
-	detalle := facturas.NewFacturaCompraVentaBonDetalleBuilder().
+	detalle := facturas.NewFacturaCompraVentaBonificacionesDetalleBuilder().
 		WithActividadEconomica("477300").
 		WithCodigoProductoSin(622539).
 		WithCodigoProducto("abc123").
@@ -1021,7 +1021,7 @@ func TestSiatCompraVentaService_RecepcionFacturaCompraVentaBonificaciones(t *tes
 		WithSubTotal(subTotal).
 		Build()
 
-	factura := facturas.NewFacturaCompraVentaBonBuilder().
+	factura := facturas.NewFacturaCompraVentaBonificacionesBuilder().
 		WithModalidad(facturas.ModalidadElectronica).
 		WithCabecera(cabecera).
 		AddDetalle(detalle).
