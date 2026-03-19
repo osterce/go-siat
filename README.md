@@ -155,7 +155,7 @@ func main() {
 
     // 3. Construir Cabecera y Detalle con el Builder
     nombre := "JUAN PEREZ"
-    cabecera := facturas.NewFacturaCompraVentaCabeceraBuilder().
+    cabecera := facturas.NewCompraVentaCabeceraBuilder().
         WithNitEmisor(nit).
         WithRazonSocialEmisor("Mi Empresa S.R.L.").
         WithNumeroFactura(1).
@@ -167,7 +167,7 @@ func main() {
         WithCodigoDocumentoSector(1).
         Build()
 
-    detalle := facturas.NewFacturaCompraVentaDetalleBuilder().
+    detalle := facturas.NewCompraVentaDetalleBuilder().
         WithActividadEconomica("477300").
         WithCodigoProductoSin("622539").
         WithDescripcion("PRODUCTO DEMO").
@@ -176,7 +176,7 @@ func main() {
         WithSubTotal(100).
         Build()
 
-    factura := facturas.NewFacturaCompraVentaBuilder().
+    factura := facturas.NewCompraVentaBuilder().
         WithCabecera(cabecera).
         AddDetalle(detalle).
         Build()
@@ -187,7 +187,7 @@ func main() {
     hash, archivoBase64, _ := utils.CompressAndHash(signedXML)
 
     // 5. Enviar al SIAT
-    req := models.CompraVenta().NewRecepcionFacturaBuilder().
+    req := models.CompraVenta().NewRecepcionFactura().
         WithCodigoAmbiente(1).
         WithNit(nit).
         WithCufd("TU_CUFD").

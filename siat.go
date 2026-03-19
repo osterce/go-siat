@@ -53,7 +53,7 @@ func (m Map) ToStruct(v interface{}) error {
 // accesibles a través de un único punto de entrada orientado a métodos.
 type SiatServices struct {
 	operaciones    port.SiatOperacionesPort
-	sincronizacion port.SiatSincronizacionCatalogoService
+	sincronizacion port.SiatSincronizacionService
 	codigos        port.SiatCodigosService
 	compraVenta    port.SiatCompraVentaService
 	computarizada  port.SiatComputarizadaService
@@ -65,7 +65,7 @@ func (s *SiatServices) Operaciones() port.SiatOperacionesPort {
 }
 
 // Sincronizacion retorna el servicio para la obtención de catálogos y parametrizaciones del SIAT.
-func (s *SiatServices) Sincronizacion() port.SiatSincronizacionCatalogoService {
+func (s *SiatServices) Sincronizacion() port.SiatSincronizacionService {
 	return s.sincronizacion
 }
 
