@@ -1,6 +1,7 @@
 package siat
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -10,6 +11,44 @@ import (
 	"github.com/ron86i/go-siat/internal/core/port"
 )
 
+// Map is a shortcut for map[string]interface{}, useful for JSON returns
+type Map map[string]interface{}
+
+func (m Map) ToJSON() (string, error) {
+	bytes, err := json.Marshal(m)
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
+}
+
+func (m Map) Sum() float64 {
+	var total float64
+	for _, v := range m {
+		switch val := v.(type) {
+		case float64:
+			total += val
+		case float32:
+			total += float64(val)
+		case int:
+			total += float64(val)
+		case int64:
+			total += float64(val)
+		case int32:
+			total += float64(val)
+		}
+	}
+	return total
+}
+
+func (m Map) ToStruct(v interface{}) error {
+	bytes, err := m.ToJSON()
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal([]byte(bytes), v)
+}
+
 // SiatServices agrupa todas las implementaciones de los servicios del SIAT
 // accesibles a través de un único punto de entrada orientado a métodos.
 type SiatServices struct {
@@ -17,6 +56,7 @@ type SiatServices struct {
 	sincronizacion port.SiatSincronizacionCatalogoService
 	codigos        port.SiatCodigosService
 	compraVenta    port.SiatCompraVentaService
+	computarizada  port.SiatComputarizadaService
 }
 
 // Operaciones retorna el servicio para la gestión de puntos de venta y eventos significativos.
@@ -37,6 +77,11 @@ func (s *SiatServices) Codigos() port.SiatCodigosService {
 // CompraVenta retorna el servicio para el envío y anulación de facturas comerciales.
 func (s *SiatServices) CompraVenta() port.SiatCompraVentaService {
 	return s.compraVenta
+}
+
+// Computarizada retorna el servicio para el envío y anulación de facturas comerciales.
+func (s *SiatServices) Computarizada() port.SiatComputarizadaService {
+	return s.computarizada
 }
 
 // New crea e inicializa una nueva instancia unificada de los servicios del SIAT.
@@ -72,10 +117,15 @@ func New(baseUrl string, httpClient *http.Client) (*SiatServices, error) {
 		return nil, err
 	}
 
+	computarizada, err := service.NewSiatComputarizadaService(baseUrl, httpClient)
+	if err != nil {
+		return nil, err
+	}
 	return &SiatServices{
 		operaciones:    operaciones,
 		sincronizacion: sincronizacion,
 		codigos:        codigos,
 		compraVenta:    compraVenta,
+		computarizada:  computarizada,
 	}, nil
 }
