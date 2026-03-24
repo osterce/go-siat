@@ -92,7 +92,6 @@ func (s *SiatSincronizacionService) VerificarComunicacion(ctx context.Context, c
 	return performSoapRequest[sincronizacion.VerificarComunicacion, sincronizacion.VerificarComunicacionResponse](ctx, s.httpClient, s.url, config.Token, opaqueReq)
 }
 
-
 // NewSiatSincronizacionService crea una nueva instancia del servicio SiatSincronizacionService.
 func NewSiatSincronizacionService(baseUrl string, httpClient *http.Client) (*SiatSincronizacionService, error) {
 	baseUrl = strings.TrimSpace(baseUrl)
