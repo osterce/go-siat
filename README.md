@@ -83,7 +83,6 @@ import (
     "context"
     "log"
     "github.com/ron86i/go-siat"
-    "github.com/ron86i/go-siat/pkg/config"
     "github.com/ron86i/go-siat/pkg/models"
 )
 
@@ -106,7 +105,7 @@ func main() {
 
     // 3. Ejecutar operación
     ctx := context.Background()
-    cfg := config.Config{Token: "TU_TOKEN_API"}
+    cfg := siat.Config{Token: "TU_TOKEN_API"}
     resp, err := s.Codigos().SolicitudCuis(ctx, cfg, req)
     if err != nil {
         log.Fatal("Error en la solicitud:", err)
@@ -138,7 +137,6 @@ import (
     "time"
 
     "github.com/ron86i/go-siat"
-    "github.com/ron86i/go-siat/pkg/config"
     "github.com/ron86i/go-siat/pkg/models"
     "github.com/ron86i/go-siat/pkg/models/facturas"
     "github.com/ron86i/go-siat/pkg/utils"
@@ -147,7 +145,7 @@ import (
 func main() {
     // 1. Inicializar cliente y credenciales (Asumiendo que ya tiene CUIS y CUFD)
     s, _ := siat.New("https://pilotosiatservicios.impuestos.gob.bo/v2", nil)
-    cfg := config.Config{Token: "TU_TOKEN"}
+    cfg := siat.Config{Token: "TU_TOKEN"}
     nit := int64(123456789)
     cufdControl := "CODIGO_CONTROL_CUFD"
 
