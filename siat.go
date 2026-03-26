@@ -13,9 +13,13 @@ import (
 	"github.com/ron86i/go-siat/internal/core/port"
 )
 
-// Map is a shortcut for map[string]interface{}, useful for JSON returns
+// Map es un alias para map[string]interface{} que proporciona métodos de utilidad
+// para trabajar con datos JSON de forma más cómda.
+// Es especialmente útil al trabajar con respuestas heterogéneas del SIAT.
 type Map map[string]interface{}
 
+// ToJSON convierte el Map a su representación en string JSON.
+// Retorna un error si la codificación falla.
 func (m Map) ToJSON() (string, error) {
 	bytes, err := json.Marshal(m)
 	if err != nil {
@@ -24,6 +28,9 @@ func (m Map) ToJSON() (string, error) {
 	return string(bytes), nil
 }
 
+// Sum retorna la suma de todos los valores numéricos en el Map.
+// Soporta tipos float64, float32, int, int64 e int32.
+// Los valores no numéricos se ignoran.
 func (m Map) Sum() float64 {
 	var total float64
 	for _, v := range m {
@@ -43,6 +50,9 @@ func (m Map) Sum() float64 {
 	return total
 }
 
+// ToStruct convierte el Map en la estructura Go especificada.
+// Utiliza encoding/json internamente, por lo que se requiere que v sea un puntero
+// a una estructura con etiquetas json apropiadas.
 func (m Map) ToStruct(v interface{}) error {
 	bytes, err := m.ToJSON()
 	if err != nil {
@@ -51,8 +61,11 @@ func (m Map) ToStruct(v interface{}) error {
 	return json.Unmarshal([]byte(bytes), v)
 }
 
-// SiatServices agrupa todas las implementaciones de los servicios del SIAT
-// accesibles a través de un único punto de entrada orientado a métodos.
+// SiatServices es el punto de entrada principal del SDK.
+// Agrupa todas las implementaciones de los servicios del SIAT
+// (Códigos, Sincronización, Operaciones, Compra-Venta, Computarizada, Electrónica)
+// y proporciona acceso a ellos a través de métodos orientados a objetivos.
+// Los usuarios deben crear una instancia usando New().
 type SiatServices struct {
 	operaciones    port.SiatOperacionesPort
 	sincronizacion port.SiatSincronizacionService
@@ -62,39 +75,69 @@ type SiatServices struct {
 	electronica    port.SiatElectronicaService
 }
 
-// Operaciones retorna el servicio para la gestión de puntos de venta y eventos significativos.
+// Operaciones retorna el servicio para la gestión de puntos de venta (PV),
+// cierre de períodos de facturación y eventos significativos (cambios de modalidad, etc.).
 func (s *SiatServices) Operaciones() port.SiatOperacionesPort {
 	return s.operaciones
 }
 
-// Sincronizacion retorna el servicio para la obtención de catálogos y parametrizaciones del SIAT.
+// Sincronizacion retorna el servicio que proporciona acceso a catálogos maestros:
+// actividades económicas, documentos fiscales, monedas, tipos de cambio, etc.
+// Estos catálogos son esenciales para validar datos antes de emitir facturas.
 func (s *SiatServices) Sincronizacion() port.SiatSincronizacionService {
 	return s.sincronizacion
 }
 
-// Codigos retorna el servicio para la solicitud de códigos CUIS y CUFD, y validación de NIT.
+// Codigos retorna el servicio para:
+// - Solicitud de códigos CUIS (Código Único de Identificación de Sistemas)
+// - Solicitud de códigos CUFD (Código Único de Facturación por Dirección)
+// - Validación de números NIT (Rol Tributario)
+// Los códigos CUIS y CUFD son obligatorios para emitir facturas.
 func (s *SiatServices) Codigos() port.SiatCodigosService {
 	return s.codigos
 }
 
-// CompraVenta retorna el servicio para el envío y anulación de facturas comerciales.
+// CompraVenta retorna el servicio para el sector de compra-venta (Sector 1).
+// Permite enviar, recibir y anular facturas comerciales estándar.
+// Este es el sector más común para comercios generales.
 func (s *SiatServices) CompraVenta() port.SiatCompraVentaService {
 	return s.compraVenta
 }
 
-// Computarizada retorna el servicio para el envío y anulación de facturas comerciales.
+// Computarizada retorna el servicio para facturación computarizada
+// (sin firma digital, basada en máquinas registradoras fiscales).
+// Permite enviar, recibir y anular facturas de este tipo.
 func (s *SiatServices) Computarizada() port.SiatComputarizadaService {
 	return s.computarizada
 }
 
-// Electronica retorna el servicio para el envío y anulación de facturas comerciales.
+// Electronica retorna el servicio para facturación electrónica (con firma digital).
+// Permite enviar, recibir y anular facturas electrónicas de todos los sectores.
+// Este es el tipo de facturación más moderno y flexible del SIAT.
 func (s *SiatServices) Electronica() port.SiatElectronicaService {
 	return s.electronica
 }
 
-// New crea e inicializa una nueva instancia unificada de los servicios del SIAT.
-// Requiere la URL base del servicio (Pruebas o Producción) y un cliente HTTP opcional.
-// Si httpClient es nil, se utilizará uno por defecto con un tiempo de espera (timeout) de 15 segundos.
+// New crea e inicializa una nueva instancia de SiatServices.
+//
+// Parámetros:
+//   - baseUrl: URL base de los servicios SIAT (ej: https://pilotosiatservicios.impuestos.gob.bo/v2)
+//   - httpClient: Cliente HTTP personalizado (opcional). Si es nil, se crea uno con configuración segura.
+//
+// La función configura automáticamente:
+//   - Timeouts apropiados (15s handshake, 45s total)
+//   - TLS 1.2+ para seguridad
+//   - Pools de conexión para alto rendimiento
+//   - Proxy desde variables de entorno si están configuradas
+//
+// Retorna un error si baseUrl está vacía o si alguno de los servicios falla al inicializarse.
+//
+// Ejemplo:
+//
+//	s, err := siat.New("https://pilotosiatservicios.impuestos.gob.bo/v2", nil)
+//	if err != nil {
+//		log.Fatal(err)
+//	}
 func New(baseUrl string, httpClient *http.Client) (*SiatServices, error) {
 	if httpClient != nil {
 		clonedClient := *httpClient
