@@ -1,13 +1,10 @@
 package siat
 
 import (
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"net"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/ron86i/go-siat/internal/adapter/service"
 	"github.com/ron86i/go-siat/internal/core/port"
@@ -143,24 +140,8 @@ func New(baseUrl string, httpClient *http.Client) (*SiatServices, error) {
 		clonedClient := *httpClient
 		httpClient = &clonedClient
 	} else {
-		httpClient = &http.Client{
-			Transport: &http.Transport{
-				MaxIdleConns:        100,
-				MaxConnsPerHost:     100,
-				MaxIdleConnsPerHost: 20,
-				IdleConnTimeout:     90 * time.Second,
-				Proxy:               http.ProxyFromEnvironment,
-				DialContext: (&net.Dialer{
-					Timeout:   15 * time.Second,
-					KeepAlive: 30 * time.Second,
-				}).DialContext,
-				TLSHandshakeTimeout: 15 * time.Second,
-				TLSClientConfig: &tls.Config{
-					MinVersion: tls.VersionTLS12,
-				},
-			},
-			Timeout: 45 * time.Second,
-		}
+		// Usar HTTPConfig para crear cliente optimizado por defecto
+		httpClient = service.NewHTTPClient(service.DefaultHTTPConfig())
 	}
 
 	baseUrl = strings.TrimSpace(baseUrl)
