@@ -102,6 +102,17 @@ The SDK covers the critical services of the SIAT ecosystem:
 - **Sale of Minerals**: Internal Sale and Export of Minerals.
 - **Sale to BCB**: Sale of gold and minerals to the **Central Bank of Bolivia**.
 
+### 🎓 Education
+- **Educational Sectors**: Schools, Universities, and Institutes (National and Free Trade Zone).
+
+### 🎲 Other Special Sectors
+- **Games of Chance**: Casinos and entertainment venues.
+- **Zero Tax (Tasa Cero)**: Books and international cargo transportation.
+- **ICE Products**: Items covered by the Specific Consumption Tax.
+- **Prepayments and Shared Invoice**: Complex invoicing flows.
+- **Prevalued**: Invoices with fixed price and recurring tax service.
+- **Foreign Currency Exchange**: Exchange houses and financial entities.
+
 ---
 
 ## 🚀 Quick Start Guide
@@ -157,7 +168,7 @@ The project follows a modular architecture based on **Ports and Adapters (Hexago
 - **`internal/core/domain/`**: Pure business logic and SIAT data structures.
 - **`internal/core/port/`**: Definition of interfaces (contracts).
 - **`internal/adapter/services/`**: Implementation of SOAP clients and communication.
-- **`pkg/builders/`**: Fluent entities for building complex XML/JSON (Invoices).
+- **`pkg/models/invoices/`**: Domain models and fluent builders for the 35 SIAT sectors.
 - **`pkg/utils/`**: Utilities for signatures, compression, and formatting.
 
 ---
@@ -165,22 +176,34 @@ The project follows a modular architecture based on **Ports and Adapters (Hexago
 ## 📂 Documentation Reference
 
 For detailed guides and implementation details, see:
-- [Architecture Overview](ARCHITECTURE.md)
-- [Best Practices](CONTEXT_BEST_PRACTICES.md)
+
+| Document | Description |
+| :--- | :--- |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Architectural design, patterns, and design decisions of the SDK. |
+| [CONTRIBUTING.md](.github/CONTRIBUTING.md) | Contributor guide: how to report bugs and send pull requests. |
+| [CONTEXT_BEST_PRACTICES.md](CONTEXT_BEST_PRACTICES.md) | Best practices for using `context.Context` in applications calling the SDK. |
+| [SUPPORT.md](.github/SUPPORT.md) | Technical and commercial support for electronic invoicing. |
 
 ---
-
-## 🛠️ Usage Reference (Tests)
 
 The best way to learn how to use each service is by reviewing the integration tests:
-- `siat_test.go`: End-to-end flows.
-- `pkg/models/invoices/`: Specific examples for each of the 35 sectors.
+
+| Category | Test File |
+| :--- | :--- |
+| **Codes** | [`siat_codigos_service_test.go`](internal/adapter/services/siat_codigos_service_test.go) |
+| **Synchronization** | [`siat_sincronizacion_service_test.go`](internal/adapter/services/siat_sincronizacion_service_test.go) |
+| **Operations** | [`siat_operaciones_service_test.go`](internal/adapter/services/siat_operaciones_service_test.go) |
+| **Sales** | [`siat_compra_venta_service_test.go`](internal/adapter/services/siat_compra_venta_service_test.go) |
+| **Electronic** | [`siat_electronica_service_test.go`](internal/adapter/services/siat_electronica_service_test.go) |
+| **Computerized** | [`siat_computarizada_service_test.go`](internal/adapter/services/siat_computarizada_service_test.go) |
+| **Invoicing (Sectors)** | [`pkg/models/invoices/`](pkg/models/invoices/) |
+| **End-to-End** | [`siat_test.go`](siat_test.go) |
 
 ---
 
-## 🤝 Contribution and Support
+Contributions are welcome! If you find a bug or have a suggestion, please open an **Issue** or a **Pull Request** (please review the [`CONTRIBUTING.md`](.github/CONTRIBUTING.md)).
 
-Contributions are welcome! If you find a bug or have a suggestion, please open an **Issue** or a **Pull Request**.
+If you need technical help or commercial support for integrating electronic invoicing in your company, please check our [`SUPPORT.md`](.github/SUPPORT.md).
 
 ---
 

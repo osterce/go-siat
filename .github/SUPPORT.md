@@ -1,26 +1,36 @@
-# Soporte y Comunidad
+# Support and Community
 
-¡Hola! Gracias por usar **go-siat**. Este SDK fue creado con el objetivo de simplificar la integración con el SIAT en Bolivia y ayudar a que más desarrolladores puedan implementar facturación electrónica de forma sencilla.
+Hello! Thank you for using **go-siat**. This SDK was created with the goal of simplifying integration with SIAT in Bolivia and helping more developers implement electronic invoicing easily.
 
-Si el proyecto te ha sido útil, aquí tienes algunas formas de apoyarlo para que pueda seguir mejorando:
-
----
-
-## ¡Invítame un café! ☕
-
-Mantener y actualizar este SDK requiere tiempo y dedicación constante para seguir el ritmo de las normativas. Tu apoyo ayuda directamente a cubrir los costos de desarrollo y mantenimiento.
-
-- **GitHub Sponsors**: Apoya el desarrollo continuo del proyecto directamente desde el repositorio.
+If the project has been useful to you, here are some ways to support it so it can continue to improve:
 
 ---
 
-## Soporte y Consultoría 🛠️
+## Buy me a coffee! ☕
 
-Si necesitas ayuda personalizada para tu empresa o requieres implementar funcionalidades específicas para tu negocio:
+Maintaining and updating this SDK requires constant time and dedication to keep up with the regulations. Your support directly helps cover development and maintenance costs.
 
-- **Asesoría Técnica**: Ofrezco servicios de consultoría y soporte prioritario para implementaciones corporativas.
-- **Contacto Directo**: Escríbeme por [Telegram](https://t.me/ron86i) para cualquier consulta, sugerencia o para compartir cómo estás usando el SDK.
+- **GitHub Sponsors**: Support the continuous development of the project directly from the repository.
 
 ---
 
-¡Gracias por ayudar a que **go-siat** siga siendo una herramienta de calidad para toda la comunidad boliviana! ❤️
+## Support and Consulting 🛠️
+
+If you need personalized help for your company or require specific functionalities for your business:
+
+- **Technical Consulting**: I offer consulting services and priority support for corporate implementations.
+- **Direct Contact**: Messaging me on [Telegram](https://t.me/ron86i) for any questions, suggestions, or to share how you're using the SDK.
+
+---
+
+## Issue Reporting 🐛
+
+If you find a bug or have a technical suggestion:
+
+1. Check if an **Issue** is already open.
+2. If not, open a new one following the bug report template.
+3. Make sure to include relevant logs (without sensitive information).
+
+---
+
+Thank you for helping **go-siat** continue to be a quality tool for the entire Bolivian community! ❤️

@@ -19,7 +19,7 @@
   <em><b>go-siat</b> es un SDK profesional desarrollado en Go, diseñado para simplificar la integración con los servicios web SOAP del <b>SIAT (Sistema Integrado de Administración Tributaria)</b>.</em>
 </p>
 
-## 💡¿Por qué go-siat?
+## 💡 ¿Por qué go-siat?
 
 Integrarse con los servicios web SOAP del SIAT para la facturación electrónica en Bolivia suele ser un proceso complejo que involucra el manejo manual de XML, firmas digitales (XMLDSig) y estructuras de datos anidadas propensas a errores.
 
@@ -53,8 +53,20 @@ Integrarse con los servicios web SOAP del SIAT para la facturación electrónica
 5. [Arquitectura del Proyecto](#-arquitectura-del-proyecto)
 6. [Referencia de Documentación](#-referencia-de-documentación)
 7. [Referencia de Uso (Tests)](#-referencia-de-uso-tests)
-8. [Contribución](#-contribución-y-soporte)
+8. [Contribución y Soporte](#-contribución-y-soporte)
 9. [Licencia](#-licencia)
+
+---
+
+## 🏗️ Arquitectura del Proyecto
+
+El proyecto sigue una arquitectura modular basada en **Ports and Adapters (Hexagonal)** para garantizar flexibilidad, testeabilidad y desacoplamiento de los servicios web de Impuestos:
+
+- **`internal/core/domain/`**: Lógica de negocio pura y estructuras de datos del SIAT.
+- **`internal/core/port/`**: Definición de interfaces (contratos) de entrada y salida.
+- **`internal/adapter/services/`**: Implementación de los clientes SOAP y comunicación con SIAT.
+- **`pkg/models/invoices/`**: Modelos de dominio y builders fluidos para los 35 sectores del SIAT.
+- **`pkg/utils/`**: Utilidades genéricas (Firmas, Compresión, Formateo).
 
 ---
 
@@ -121,9 +133,9 @@ El SDK incluye documentación detallada para casos de uso avanzados:
 
 | Documento | Descripción |
 | :--- | :--- |
-| [ARCHITECTURE.md](../../ARCHITECTURE.md) | Diseño arquitectónico, patrones, y decisiones de diseño del SDK. |
+| [ARCHITECTURE.md](ARCHITECTURE.md) | Diseño arquitectónico, patrones, y decisiones de diseño del SDK. |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Guía para contribuidores: cómo reportar bugs y enviar pull requests. |
-| [CONTEXT_BEST_PRACTICES.md](../../CONTEXT_BEST_PRACTICES.md) | Mejores prácticas para usar `context.Context` en aplicaciones que llaman al SDK. |
+| [CONTEXT_BEST_PRACTICES.md](CONTEXT_BEST_PRACTICES.md) | Mejores prácticas para usar `context.Context` en aplicaciones que llaman al SDK. |
 
 ---
 ## Guía de Inicio Rápido
@@ -723,13 +735,14 @@ Para una comprensión profunda de cada servicio, los **Tests de Integración** a
 
 | Categoría | Archivo de Test |
 | :--- | :--- |
-| **Códigos** | [`siat_codigos_service_test.go`](./internal/adapter/service/siat_codigos_service_test.go) |
-| **Sincronización** | [`siat_sincronizacion_service_test.go`](./internal/adapter/service/siat_sincronizacion_service_test.go) |
-| **Operaciones** | [`siat_operaciones_service_test.go`](./internal/adapter/service/siat_operaciones_service_test.go) |
-| **Compra-Venta** | [`siat_compra_venta_service_test.go`](./internal/adapter/service/siat_compra_venta_service_test.go) |
-| **Electrónica** | [`siat_electronica_service_test.go`](./internal/adapter/service/siat_electronica_service_test.go) |
-| **Computarizada** | [`siat_computarizada_service_test.go`](./internal/adapter/service/siat_computarizada_service_test.go) |
-| **Facturación (Sectores)** | [`pkg/models/invoices/`](./pkg/models/invoices/) |
+| **Códigos** | [`siat_codigos_service_test.go`](../../internal/adapter/services/siat_codigos_service_test.go) |
+| **Sincronización** | [`siat_sincronizacion_service_test.go`](../../internal/adapter/services/siat_sincronizacion_service_test.go) |
+| **Operaciones** | [`siat_operaciones_service_test.go`](../../internal/adapter/services/siat_operaciones_service_test.go) |
+| **Compra-Venta** | [`siat_compra_venta_service_test.go`](../../internal/adapter/services/siat_compra_venta_service_test.go) |
+| **Electrónica** | [`siat_electronica_service_test.go`](../../internal/adapter/services/siat_electronica_service_test.go) |
+| **Computarizada** | [`siat_computarizada_service_test.go`](../../internal/adapter/services/siat_computarizada_service_test.go) |
+| **Facturación (Sectores)** | [`pkg/models/invoices/`](../../pkg/models/invoices/) |
+| **Flujos Completos** | [`siat_test.go`](../../siat_test.go) |
 
 
 > **Configuración de Ambiente**
@@ -746,10 +759,10 @@ Para una comprensión profunda de cada servicio, los **Tests de Integración** a
 2. Enviar un **Pull Request** con mejoras o correcciones.
 3. Dejar una ⭐️ en el repositorio si este SDK te ha ahorrado horas de lidiar con SOAP.
 
-Si necesitas ayuda técnica o soporte comercial para integrar la facturación electrónica en tu empresa, revisa nuestro [`SUPPORT.md`](../../SUPPORT.md).
+Si necesitas ayuda técnica o soporte comercial para integrar la facturación electrónica en tu empresa, revisa nuestro [`SUPPORT.md`](SUPPORT.md).
 
 ---
 
 ## 🧾 Licencia
 
-Distribuido bajo la **Licencia MIT**. Consulte el archivo [`LICENSE`](./LICENSE) para más detalles.
+Distribuido bajo la **Licencia MIT**. Consulte el archivo [`LICENSE`](../../LICENSE) para más detalles.
