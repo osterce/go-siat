@@ -57,7 +57,7 @@ func NewSiatDocumentoAjusteService(baseUrl string, httpClient *http.Client) (*si
 	}
 
 	return &siatDocumentoAjusteService{
-		url:        baseUrl,
+		url:        fullURL(baseUrl, SiatDocumentoAjuste),
 		httpClient: httpClient,
 	}, nil
 }
