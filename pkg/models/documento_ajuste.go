@@ -59,7 +59,7 @@ type verificarComunicacionDocumentoAjusteBuilder struct {
 	request *documento_ajuste.VerificarComunicacion
 }
 
-func (documentoAjusteNamespace) NewRecepcionDocumentoAjuste() *recepcionDocumentoAjusteBuilder {
+func (documentoAjusteNamespace) NewRecepcionBuilder() *recepcionDocumentoAjusteBuilder {
 	return &recepcionDocumentoAjusteBuilder{
 		request: &documento_ajuste.RecepcionDocumentoAjuste{},
 	}
@@ -139,7 +139,7 @@ func (b *recepcionDocumentoAjusteBuilder) Build() RecepcionDocumentoAjuste {
 	return RecepcionDocumentoAjuste{RequestWrapper[documento_ajuste.RecepcionDocumentoAjuste]{request: b.request}}
 }
 
-func (documentoAjusteNamespace) NewAnulacionDocumentoAjuste() *anulacionDocumentoAjusteBuilder {
+func (documentoAjusteNamespace) NewAnulacionBuilder() *anulacionDocumentoAjusteBuilder {
 	return &anulacionDocumentoAjusteBuilder{
 		request: &documento_ajuste.AnulacionDocumentoAjuste{},
 	}
@@ -204,7 +204,7 @@ func (b *anulacionDocumentoAjusteBuilder) Build() AnulacionDocumentoAjuste {
 	return AnulacionDocumentoAjuste{RequestWrapper[documento_ajuste.AnulacionDocumentoAjuste]{request: b.request}}
 }
 
-func (documentoAjusteNamespace) NewReversionAnulacionDocumentoAjuste() *reversionAnulacionDocumentoAjusteBuilder {
+func (documentoAjusteNamespace) NewReversionAnulacionBuilder() *reversionAnulacionDocumentoAjusteBuilder {
 	return &reversionAnulacionDocumentoAjusteBuilder{
 		request: &documento_ajuste.ReversionAnulacionDocumentoAjuste{},
 	}
@@ -274,7 +274,7 @@ func (b *reversionAnulacionDocumentoAjusteBuilder) Build() ReversionAnulacionDoc
 	return ReversionAnulacionDocumentoAjuste{RequestWrapper[documento_ajuste.ReversionAnulacionDocumentoAjuste]{request: b.request}}
 }
 
-func (documentoAjusteNamespace) NewVerificacionEstadoDocumentoAjuste() *verificacionEstadoDocumentoAjusteBuilder {
+func (documentoAjusteNamespace) NewVerificacionEstadoBuilder() *verificacionEstadoDocumentoAjusteBuilder {
 	return &verificacionEstadoDocumentoAjusteBuilder{
 		request: &documento_ajuste.VerificacionEstadoDocumentoAjuste{},
 	}
